@@ -34,6 +34,19 @@ Feature: Simple Commands
     When I run `cli greet Santa`
     Then the output should contain "Hello Santa!"
 
+  Scenario: Too many arguments are reported as an error
+    Given a script called "cli" with:
+    """
+    class Cli < Hoister::Cli
+
+      desc "greet someone"
+      def greet(someone)
+        puts "Hello #{someone}!"
+      end
+    end
+    """
+    When I run `cli greet Santa Clause`
+    Then the output should contain "error: too many arguments for 'cli greet' (2 instead of 1)"
 
   Scenario: A required parameter must be provided
     Given a script called "cli" with:

@@ -22,9 +22,9 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
-  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "rspec", ">= 2.14", "< 3.0"
   spec.add_development_dependency "cucumber"
-  spec.add_development_dependency "aruba"
-  spec.add_development_dependency "yard" 
+  spec.add_development_dependency "aruba", ">= 0.4.6"
+  spec.add_development_dependency "yard", ">= 0.8.6.1"
 
 end

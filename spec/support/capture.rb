@@ -9,3 +9,8 @@ def capture
   end
   fake.string
 end
+
+
+def expect_capture(&block)
+  expect(capture &block)
+end

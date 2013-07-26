@@ -1,7 +1,13 @@
+require 'hoister/cli/errors'
+
 module Hoister
   module Cli
 
     # Describes a command and helps executing it
+    # 
+    # The command is defined by a name and a list of arguments (see class Arg).
+    # The body of the command is a lambda that accepts exactly the arguments
+
     class Command
       # The name of the command
       attr_reader :name
@@ -22,6 +28,8 @@ module Hoister
       # runs the command 
       def dispatch(*args)
         @body.call(*args)
+      rescue ArgumentError => e
+        raise CommandArgumentError.new(name), e.message
       end
     end
 
