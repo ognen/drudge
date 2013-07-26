@@ -12,6 +12,9 @@ module Hoister
 
     # Identifies a problem with the arguments
     class CommandArgumentError < CliError; end
+
+    # The user asked to execute a command that doesn't exist
+    class UnknownCommandError < CliError; end
   end
 end
 
