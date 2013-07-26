@@ -5,7 +5,7 @@ Feature: Simple Commands
 
 
   Scenario: A simple command with no arguments is just a method call 
-    Given the script 'cli' with:
+    Given a script called "cli" with:
     """
     class Cli < Hoister::Cli
 
@@ -20,8 +20,8 @@ Feature: Simple Commands
     Then the output should contain "Verified."
 
 
-  Scenario: A method with an argument maps to a command in the script with one required argument
-    Given the script 'cli' with:
+  Scenario: A method with an argument maps to a command in a script with one required argument
+    Given a script called "cli" with:
     """
     class Cli < Hoister::Cli
 
@@ -36,7 +36,7 @@ Feature: Simple Commands
 
 
   Scenario: A required parameter must be provided
-    Given the script 'cli' with:
+    Given a script called "cli" with:
     """
     class Cli < Hoister::Cli
 
