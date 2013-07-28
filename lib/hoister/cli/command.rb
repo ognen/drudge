@@ -18,11 +18,16 @@ module Hoister
       # The command's body
       attr_reader :body
 
+      # An optional short desicription of the command
+      attr_reader :desc
+
       # Initializes a new command
-      def initialize(name, args = [], body)
+      def initialize(name, args = [], body, desc: "")
         @name = name.to_sym
         @args = args
         @body = body
+
+        @desc = desc
       end
 
       # runs the command 

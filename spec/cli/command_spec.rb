@@ -51,6 +51,14 @@ module Hoister
           end
         end
       end
+
+      describe "The command's description" do
+        subject do
+          Command.new(:verify, -> { puts "Verified." }, desc: "Verification")
+        end
+
+        its(:desc) { should eq "Verification" }
+      end
     end
   end
 end
