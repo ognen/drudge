@@ -8,9 +8,7 @@ module Hoister
     module ClassDSL
 
       def self.included(cls)
-        puts self.class.inspect
-        cls.singleton_class.send :attr_reader, :__commands
-        cls.send :extend, ClassMethods
+        cls.singleton_class.send :include, ClassMethods
       end
 
       def to_kit(name = $0)
@@ -49,6 +47,34 @@ module Hoister
           end
 
           super
+        end
+
+        def __commands
+          merged_commands((@__commands || []), (superclass.__commands rescue []))
+        end
+
+        private 
+
+        def merged_commands(newer, older)
+          case
+          when older.empty? then newer
+          when newer.empty? then older
+          else 
+            non_overriden       = older.reject { |c| newer.any? { |cc| cc[:name] == c[:name] } } 
+            newer_and_overriden = newer.map do |cmd|
+              overriden = older.find { |c| c[:name] == cmd[:name] }
+
+              if overriden
+                overriden.merge(cmd)
+                         .merge(meta: overriden[:meta].merge(cmd[:meta]))
+              else
+                cmd
+              end
+            end 
+
+            non_overriden + newer_and_overriden
+          end
+        
         end
 
         private
