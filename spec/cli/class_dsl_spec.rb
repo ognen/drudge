@@ -109,7 +109,6 @@ module Hoister
           end
         end
 
-
         describe "kit with a command whose corresponding method and metdadata is overriden" do
           subject(:kit) { OverridenWithDesc.new.to_kit(:cli) }
 

@@ -60,13 +60,20 @@ module Hoister
           when older.empty? then newer
           when newer.empty? then older
           else 
+            deep_merger = -> (_, old, new) do
+              if Hash === old
+                old.merge(new, &deep_merger)
+              else
+                new
+              end
+            end
+
             non_overriden       = older.reject { |c| newer.any? { |cc| cc[:name] == c[:name] } } 
             newer_and_overriden = newer.map do |cmd|
               overriden = older.find { |c| c[:name] == cmd[:name] }
 
               if overriden
-                overriden.merge(cmd)
-                         .merge(meta: overriden[:meta].merge(cmd[:meta]))
+                overriden.merge(cmd, &deep_merger)
               else
                 cmd
               end
