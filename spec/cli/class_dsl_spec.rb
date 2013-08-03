@@ -4,7 +4,7 @@ require 'hoister/cli/class_dsl'
 
 
 module Hoister
-  module Cli
+  class Cli
 
     
     class Sample

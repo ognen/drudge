@@ -3,7 +3,7 @@ require 'spec_helper'
 require 'hoister/cli/kit'
 
 module Hoister
-  module Cli
+  class Cli
 
     describe Kit do
       describe "command execution" do

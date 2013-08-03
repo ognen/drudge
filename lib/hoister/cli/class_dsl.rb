@@ -1,7 +1,7 @@
 require 'hoister/cli/kit'
 
 module Hoister
-  module Cli
+  class Cli
     
     # A DSL that allows writing of a command line
     # tool (kit) as a class

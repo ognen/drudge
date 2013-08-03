@@ -1,7 +1,7 @@
 require 'hoister/cli/errors'
 
 module Hoister
-  module Cli
+  class Cli
 
     # A kit is a set of commands that can be dispatched to
     class Kit

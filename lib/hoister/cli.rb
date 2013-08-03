@@ -1,7 +1,9 @@
 require "hoister/cli/version"
+require "hoister/cli/class_dsl"
 
 module Hoister
-  module Cli
-    # Your code goes here...
+  class Cli
+    include ClassDSL
+
   end
 end

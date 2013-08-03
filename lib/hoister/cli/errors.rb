@@ -1,5 +1,5 @@
 module Hoister
-  module Cli
+  class Cli
     # a c
     class CliError < StandardError
       # the command that produced the error

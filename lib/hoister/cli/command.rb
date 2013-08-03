@@ -1,7 +1,7 @@
 require 'hoister/cli/errors'
 
 module Hoister
-  module Cli
+  class Cli
 
     # Describes a command and helps executing it
     # 
