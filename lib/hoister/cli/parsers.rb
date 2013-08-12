@@ -22,8 +22,24 @@ module Hoister
       end
       module_function :tokenize
 
+      module BasicParsers
 
+        # returns a parser that matches a :val on the input
+        def value
+          -> (input) do
+            case 
+            when input.nil?, input.empty?
+              Failure("Expected a value", input)
+            when input[0][0] == :val
+              Success(input[0][1], input.drop(1))
+            else
+              Failure("Expected a value", input)
+            end
+          end
+        end
+      end
 
+      include BasicParsers
     end
 
   end

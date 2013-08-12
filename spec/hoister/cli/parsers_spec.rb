@@ -55,6 +55,25 @@ module Hoister
           end
         end
       end
+
+      describe "basic parsers" do
+        include Parsers
+
+        describe "value" do
+          context "without arguments" do 
+            subject(:val_parser) { value }
+
+            it "matches any :val sexp on the input" do
+              val_parser.call([[:val, "test"]]).should succeed_with("test")
+            end
+
+            it "fails if the next input is not a :val" do
+              val_parser.call([[:foo, "bar"]]).should fail_with("Expected a value")
+            end
+          end
+        end
+
+      end
     end
   end
 end
