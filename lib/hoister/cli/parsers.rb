@@ -25,13 +25,15 @@ module Hoister
       module BasicParsers
 
         # returns a parser that matches a :val on the input
-        def value
+        def value(expected = /.*/)
           -> (input) do
+            first, *rest = input
+
             case 
-            when input.nil?, input.empty?
+            when first.nil? 
               Failure("Expected a value", input)
-            when input[0][0] == :val
-              Success(input[0][1], input.drop(1))
+            when first[0] == :val && expected === first[1]
+              Success(first[1], rest)
             else
               Failure("Expected a value", input)
             end

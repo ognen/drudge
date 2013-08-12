@@ -59,17 +59,32 @@ module Hoister
       describe "basic parsers" do
         include Parsers
 
-        describe "value" do
+        describe ".value" do
           context "without arguments" do 
-            subject(:val_parser) { value }
+            subject { value }
 
-            it "matches any :val sexp on the input" do
-              val_parser.call([[:val, "test"]]).should succeed_with("test")
-            end
+            it { should parse([[:val, "test"]]).as("test") }
+            it { should_not parse([[:foo, "bar"]]) }
+            it { should_not parse([]) }
+            it { should_not parse(nil) }
+          end
 
-            it "fails if the next input is not a :val" do
-              val_parser.call([[:foo, "bar"]]).should fail_with("Expected a value")
-            end
+          context "with a string argument 'something'" do
+            subject { value("something") }
+
+            it { should parse([[:val, "something"]]).as("something") }
+            it { should_not parse([[:val, "something else"]]) }
+            it { should_not parse([[:foo, "bar"]]) }
+          end
+
+          context "with a regexp argument /^ab.+/" do
+            subject { value(/^ab.+/) }
+
+            it { should parse([[:val, "abc"]]).as("abc") }
+            it { should parse([[:val, "abd"]]).as("abd") }
+            it { should_not parse([[:val, "cabc"]]) }
+            it { should_not parse([[:val, "something else"]]) }
+            it { should_not parse([[:foo, "bar"]]) }
           end
         end
 
