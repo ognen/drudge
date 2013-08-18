@@ -57,7 +57,7 @@ module Hoister
       end
 
       describe "basic parsers" do
-        include Parsers
+        include Parsers::BasicParsers
 
         describe ".value" do
           context "without arguments" do 
@@ -86,6 +86,31 @@ module Hoister
             it { should_not parse([[:val, "something else"]]) }
             it { should_not parse([[:foo, "bar"]]) }
           end
+        end
+
+      end
+
+      describe "parser combinators" do
+        include Parsers::BasicParsers
+
+        describe ".as" do
+          context "applied on a value('something') parser" do
+            subject { value('something').map { |r| { args: [r] } } }
+
+            it { should parse([[:val, "something"]]).as({ args: ['something']}) } 
+            it { should_not parse([[:val, "something else"]]) }
+          end
+        end
+
+        describe ".&" do
+          context "value('something') & value(/-t.+/)" do
+            subject { value('something') & value(/-t.+/) }
+
+            it { should parse([[:val, 'something'], [:val, '-tower']]).as(['something', '-tower']) }
+            it { should parse([[:val, 'something'], [:val, '-tower']]) }
+            it { should_not parse([[:val, 'something']])}
+          end
+
         end
 
       end
