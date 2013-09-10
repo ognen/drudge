@@ -111,6 +111,13 @@ module Hoister
             it { should_not parse([[:val, 'something']])}
           end
 
+          context "value('something') & value('followed by') & value('else')" do
+            subject { value('something') & value('followed by') & value('else') }
+
+            it { should parse([[:val, 'something'], [:val, 'followed by'], [:val, 'else']]).as(['something', 'followed by', 'else']) }
+            it { should_not parse([[:val, 'something']]) }
+            it { should_not parse([:val, 'something'], [:val, 'other'], [:val, 'else']) }
+          end
         end
 
       end

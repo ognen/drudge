@@ -13,6 +13,29 @@ module Hoister
         Failure.new(*args)
       end
 
+      class Seq < Array
+
+        # Collation of potentially two Seqs
+
+        # (in the examples [a] means Seq[a])        
+        #   of([a, b], c)   ==> [a, b, c]
+        #   of(a, [b, c])   ==> [a, b, c]
+        #   of(a, b)        ==> [a, b]
+        #   of([a], [b, c]) ==> [a, b, c]
+        def self.of(a, b)
+          case
+          when Seq === a && Seq === b
+            Seq.new(a + b)
+          when Seq === a 
+            Seq.new(a + [b])
+          when Seq === b
+            Seq.new([a] + b)
+          else
+            Seq[a, b]
+          end
+        end
+      end
+
       # tokenizes the arg-v list into an array of sexps
 
       def tokenize(argv)
@@ -71,6 +94,7 @@ module Hoister
           end
         end
 
+        # A parser that is a sequence of this parser followed by (other_parser)
         def &(other_parser)
           parser do |input|
             first_result = self.call(input)
@@ -79,7 +103,7 @@ module Hoister
               second_result = other_parser.call(first_result.remaining)
               case second_result
               when Success
-                Success.new([first_result.result, second_result.result], second_result.remaining)
+                Success.new(Seq.of(first_result.result, second_result.result), second_result.remaining)
               else
                 second_result
               end
