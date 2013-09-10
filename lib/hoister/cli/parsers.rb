@@ -98,15 +98,16 @@ module Hoister
         def &(other_parser)
           parser do |input|
             first_result = self.call(input)
-            case first_result
-            when Success 
+
+            if first_result.kind_of?(Success)
               second_result = other_parser.call(first_result.remaining)
-              case second_result
-              when Success
+              
+              if second_result.kind_of?(Success)
                 Success.new(Seq.of(first_result.result, second_result.result), second_result.remaining)
               else
                 second_result
               end
+
             else
               first_result
             end
