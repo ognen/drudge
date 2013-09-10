@@ -5,7 +5,7 @@ module Hoister
 
     # Describes a command and helps executing it
     # 
-    # The command is defined by a name and a list of arguments (see class Arg).
+    # The command is defined by a name and a list of arguments (see class Param).
     # The body of the command is a lambda that accepts exactly the arguments
 
     class Command
@@ -13,7 +13,7 @@ module Hoister
       attr_reader :name
 
       # The list of arguments
-      attr_reader :args
+      attr_reader :params
 
       # The command's body
       attr_reader :body
@@ -22,12 +22,12 @@ module Hoister
       attr_reader :desc
 
       # Initializes a new command
-      def initialize(name, args = [], body, desc: "")
-        @name = name.to_sym
-        @args = args
-        @body = body
+      def initialize(name, params = [], body, desc: "")
+        @name   = name.to_sym
+        @params = params
+        @body   = body
 
-        @desc = desc
+        @desc   = desc
       end
 
       # runs the command 
@@ -38,8 +38,8 @@ module Hoister
       end
     end
 
-    # Represents a command argument
-    class Arg
+    # Represents a command parameter
+    class Param
 
       TYPES = %i[any string]
 
@@ -54,7 +54,7 @@ module Hoister
         @type = type.to_sym
       end
 
-      # factory methods for every type of argument
+      # factory methods for every type of parameter
       class << self
         TYPES.each do |type|
           define_method type do |name, *rest|

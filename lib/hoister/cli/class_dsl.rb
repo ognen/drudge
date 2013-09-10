@@ -19,7 +19,7 @@ module Hoister
 
       def build_commands(commands)
         commands.map do |c|
-          Command.new(c[:name], c[:args], 
+          Command.new(c[:name], c[:params], 
                       -> (*args) { self.send c[:name], *args },
                       **c[:meta])
         end
@@ -39,9 +39,9 @@ module Hoister
             meth = instance_method(m)
 
             @__commands ||= []
-            @__commands << { name: meth.name, 
-                             args: parse_command_args(meth.parameters),
-                             meta: { desc: @__command_meta[:desc] } }
+            @__commands << { name:   meth.name, 
+                             params: parse_command_parameters(meth.parameters),
+                             meta:   { desc: @__command_meta[:desc] } }
 
             @__command_meta = {}
           end
@@ -86,10 +86,10 @@ module Hoister
 
         private
 
-        def parse_command_args(method_parameters)
+        def parse_command_parameters(method_parameters)
           method_parameters.map do |kind, name|
             case kind
-            when :req, :opt then Arg.any(name)
+            when :req, :opt then Param.any(name)
             else raise "Unsupported parameter type"
             end
           end

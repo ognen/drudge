@@ -10,7 +10,7 @@ module Hoister
     class Sample
       include ClassDSL
 
-      desc "An action with no args"
+      desc "An action with no params"
       def verify
         puts "Verified."
       end
@@ -64,9 +64,9 @@ module Hoister
             describe "the command 'verify'" do 
               subject(:command) { kit.commands[0] }
 
-              its(:name) { should eq :verify }
-              its(:args) { should be_empty }
-              its(:desc) { should eq "An action with no args" }
+              its(:name)   { should eq :verify }
+              its(:params) { should be_empty }
+              its(:desc)   { should eq "An action with no params" }
 
               it "has a body that invokes the verify method" do
                 expect_capture { command.dispatch }.to eq("Verified.\n")

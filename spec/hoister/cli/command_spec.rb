@@ -9,7 +9,7 @@ module Hoister
 
       context "command execution" do
 
-        describe "a command with no arguments" do 
+        describe "a command with no parameters" do 
           subject do
             Command.new(:verify, -> { puts "Verified." })
           end
@@ -32,12 +32,12 @@ module Hoister
 
       end
 
-      describe "a command with a couple of arguments" do 
+      describe "a command with a couple of parameters" do 
         subject do
           Command.new(:greet,
-                      [ Arg.any(:greeter),
-                        Arg.any(:greeted)],
-                      -> (greeter, greeted) { puts "#{greeter} says 'hello' to #{greeted}" })
+                      [ Param.any(:greeter),
+                        Param.any(:greeted)],
+                        -> (greeter, greeted) { puts "#{greeter} says 'hello' to #{greeted}" })
         end
 
         describe "#dispatch" do
