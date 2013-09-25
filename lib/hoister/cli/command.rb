@@ -1,4 +1,5 @@
 require 'hoister/cli/errors'
+require 'hoister/cli/parsers'
 
 module Hoister
   class Cli
@@ -9,6 +10,8 @@ module Hoister
     # The body of the command is a lambda that accepts exactly the arguments
 
     class Command
+      include Parsers::BasicParsers
+
       # The name of the command
       attr_reader :name
 
@@ -36,10 +39,21 @@ module Hoister
       rescue ArgumentError => e
         raise CommandArgumentError.new(name), e.message
       end
+
+      def argument_parser
+        parser = params.map(&:argument_parser).reduce { | a, b | a & b }
+
+        if parser
+          parser & eos
+        else
+          eos
+        end.map { |r| r[0..-2] }
+      end
     end
 
     # Represents a command parameter
     class Param
+      include Parsers::ArgumentParsers
 
       TYPES = %i[any string]
 
@@ -52,6 +66,12 @@ module Hoister
       def initialize(name, type)
         @name = name.to_sym
         @type = type.to_sym
+      end
+
+      # returns a parser that is able to parse arguments
+      # fitting this parameter
+      def argument_parser
+        arg(name)
       end
 
       # factory methods for every type of parameter

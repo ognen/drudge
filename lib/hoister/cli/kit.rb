@@ -18,12 +18,12 @@ module Hoister
 
       # Dispatches a command within the kit
       # The first argument is the command name
-      def dispatch(*args)
-        command = find_command(args[0]) rescue nil
+      def dispatch(command_name, *args)
+        command = find_command(command_name) rescue nil
 
         raise UnknownCommandError.new(name), "A command is required" unless command
 
-        command.dispatch *(args.drop(1))
+        command.dispatch *args
         
       end
 

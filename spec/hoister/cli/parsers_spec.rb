@@ -29,6 +29,7 @@ module Hoister
 
       describe "a parser function (lambda) that recognizes a [:val, something] sexp and returns that 'something'" do
         include Parsers
+        include Parsers::BasicParsers
 
         let(:parser) { -> (input) { if input[0][0] == :val then Success(input[0][1], input.drop(1)) else Failure("f", input) end } }
 
@@ -87,7 +88,22 @@ module Hoister
             it { should_not parse([[:foo, "bar"]]) }
           end
         end
+      end
 
+      describe "argument parsers" do
+        include Parsers::ArgumentParsers
+
+        describe ".arg" do
+          context "arg parser for the arg named 'test'" do
+            subject { arg(:test) }
+
+            it { should parse([[:val, "anything"]]) }
+
+            it "should include the expected paraemeter name in the error message" do
+              expect(subject.call([])).to eq(Failure("Expected a value for <test>", []))
+            end
+          end
+        end
       end
 
       describe "parser combinators" do
