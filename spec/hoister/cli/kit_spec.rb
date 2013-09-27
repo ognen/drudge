@@ -31,23 +31,16 @@ module Hoister
             expect { subject.dispatch "hello", "dear", "sir" }.to raise_error(CommandArgumentError)
           end
 
-          describe "#parse_arguments" do
-            it "parses the provided argument list, provided it's correct" do
-              expect(subject.parse_arguments %w[hello]).to eq(%[hello])
-              expect(subject.parse_arguments %w[goodbye]).to eq(%[goodbye])
-            end
+          describe "#argument_parser" do
+            subject { kit.argument_parser }
 
-            it "raises an exception when the command isn't recognized" do
-              expect { subject.parse_arguments %w[foo] }.to raise_error
-            end
+            it { should tokenize_and_parse(%w[hello]).as(%[hello]) }
+            it { should tokenize_and_parse(%w[goodbye]).as(%[goodbye]) }
 
-            it "raises an exception when the argument list has extra arguments" do
-              expect { subject.parse_arguments %w[hello someone] }.to raise_error
-            end
+            it { should_not tokenize_and_parse(%[foo]) }
+            it { should_not tokenize_and_parse(%[hello someone]) }
 
-            it "raises an exception when the command name is missing" do
-              expect { subject.parse_arguments [] }.to raise_error
-            end
+            it { should_not tokenize_and_parse(%[]) }
           end
 
         end
