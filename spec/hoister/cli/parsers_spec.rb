@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 require 'hoister/cli/parsers'
+require 'hoister/cli/errors'
 
 module Hoister
   class Cli
@@ -53,6 +54,47 @@ module Hoister
           it "doesn't parse the input and returns Failure" do
             input = [[:foo, 'bar'], [:val, 'test']]
             expect(parser.call(input)).to eq(Failure("f", input))
+          end
+        end
+      end
+
+      describe Parsers::FundamentalParser do
+        include Parsers::FundamentalParser
+
+        describe "#parser" do
+          it "takes a block and extends it with ParserCombinators" do
+            p = parser { |input| EOS }
+
+            expect(p.singleton_methods).to include(*Parsers::ParserCombinators.instance_methods)
+          end
+        end
+
+        context "a parser built with #parser" do
+          subject do
+            parser do |input|
+              if input[0][0] == :val && input[0][1] == "hello"
+                Success(input[0][1], input.drop(1))
+              else
+                Failure("f", input)
+              end
+            end
+          end
+
+          describe "#parse" do
+            it "tokenizes an array of [command line] args and parses it at once" do
+
+              expect(subject.parse(%w[hello world])).to eq(Success("hello", [[:val, "world"]]))
+            end
+          end
+
+          describe "#parse!" do
+            it "is like #parse, but returns just the result when successful" do
+              expect(subject.parse!(%w[hello world])).to eq("hello")
+            end
+
+            it "upon failed parse, it raises a CommandArgumentError" do
+              expect { subject.parse!(%w[world hello])}.to raise_error(ParseError)
+            end
           end
         end
       end

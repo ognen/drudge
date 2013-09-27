@@ -10,6 +10,17 @@ module Hoister
       end
     end
 
+    # Identifies a parse error
+    class ParseError < StandardError
+
+      attr_reader :remaining_input
+
+      def initialize(remaining_input)
+        @remaining_input = remaining_input
+      end
+      
+    end
+
     # Identifies a problem with the arguments
     class CommandArgumentError < CliError; end
 

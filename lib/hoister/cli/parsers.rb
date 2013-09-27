@@ -1,3 +1,5 @@
+require 'hoister/cli/errors'
+
 module Hoister
   class Cli
 
@@ -15,7 +17,7 @@ module Hoister
 
       class EOS
       end
-      
+
       def EOS
         EOS.new
       end
@@ -70,6 +72,7 @@ module Hoister
         # parser combinators
         def parser(&prs)
           prs.extend ParserCombinators
+          prs.extend ParserHelpers
 
           prs
         end
@@ -115,6 +118,25 @@ module Hoister
                          .describe "#ARG<#{expected}>"
         end
 
+      end
+
+      module ParserHelpers
+
+        # tokenizes and parses an array of arguments
+        def parse(argv)
+          self.call(Parsers.tokenize(argv))
+        end
+
+        # tokenizes and parses an array of arguments, returning the 
+        # parsed result. Raises an error if the parse fails
+        def parse!(argv)
+          res = parse(argv)
+          if Success === res
+            res.result
+          else
+            raise ParseError.new(res.remaining), res.message
+          end
+        end
       end
 
       module ParserCombinators
