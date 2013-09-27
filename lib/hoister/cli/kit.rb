@@ -1,10 +1,13 @@
 require 'hoister/cli/errors'
+require 'hoister/cli/parsers'
 
 module Hoister
   class Cli
 
     # A kit is a set of commands that can be dispatched to
     class Kit
+      include Parsers::CommandParsers
+
       # the name of the kit
       attr_accessor :name
 
@@ -25,6 +28,12 @@ module Hoister
 
         command.dispatch *args
         
+      end
+
+      # returns the argument parser for this kit
+      def argument_parser
+        commands.map { |c| command(c.name) & c.argument_parser }
+                .reduce { |p1, p2| p1 | p2 }
       end
 
       private

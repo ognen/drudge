@@ -47,7 +47,7 @@ module Hoister
           parser & eos
         else
           eos
-        end.map { |r| r[0..-2] }
+        end
       end
     end
 

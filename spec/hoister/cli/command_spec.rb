@@ -71,7 +71,7 @@ module Hoister
               command.argument_parser
             end
 
-            it { should tokenize_and_parse(%w[Joe]).as(%w[Joe]) }
+            it { should tokenize_and_parse(%w[Joe]).as([[:arg, 'Joe'], [:eos]]) }
             it { should_not tokenize_and_parse(%w[]) }
             it { should_not tokenize_and_parse(%w[Joe Green]) }
           end

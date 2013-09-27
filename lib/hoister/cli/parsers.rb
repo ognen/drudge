@@ -6,21 +6,8 @@ module Hoister
     module Parsers
 
       Success = Struct.new(:result, :remaining)
-      def Success(*args)
-        Success.new(*args)
-      end
 
       Failure = Struct.new(:message, :remaining)
-      def Failure(*args)
-        Failure.new(*args)
-      end
-
-      class EOS
-      end
-
-      def EOS
-        EOS.new
-      end
 
       class Seq < Array
 
@@ -64,8 +51,8 @@ module Hoister
           Failure.new(*args)
         end
 
-        def EOS
-          EOS.new
+        def Eos
+          [:eos]
         end
 
         # convenience method that creates a parser proc extended with the usual 
@@ -101,7 +88,7 @@ module Hoister
         def eos
           parser do |input|
             if input.empty?
-              Success(EOS, [])
+              Success(Eos(), [])
             else
               Failure("Expected end-of-stream", input)
             end
@@ -109,15 +96,26 @@ module Hoister
         end
       end
 
-        module ArgumentParsers
+      module ArgumentParsers
         include BasicParsers
 
         # parses a single argument with the provided name
         def arg(name, expected = /.*/)
-          value(expected).map_failure { |msg| "#{msg} for <#{name}>" }
+          value(expected).map { |a| [:arg, a] }
+                         .map_failure { |msg| "#{msg} for <#{name}>" }
                          .describe "#ARG<#{expected}>"
         end
+      end
 
+
+      module CommandParsers
+        include ArgumentParsers
+
+        # parses a command
+        def command(name)
+          value(name.to_s).map { |v| [:command, v] }
+                          .describe("COMMAND<#{name}>")
+        end
       end
 
       module ParserHelpers
