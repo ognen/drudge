@@ -178,6 +178,17 @@ module Hoister
           end
         end
 
+        describe ".|" do
+          context "value('something') | value('else')" do
+            subject { value('something') | value('else') }
+
+            it { should tokenize_and_parse(%w[something]).as('something') }
+            it { should tokenize_and_parse(%w[else]).as('else') }
+            it { should_not tokenize_and_parse(%w[other stuff]) }
+
+            its(:to_s) { should eq("something | else") }
+          end
+        end
       end
     end
   end

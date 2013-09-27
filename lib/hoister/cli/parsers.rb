@@ -199,6 +199,19 @@ module Hoister
             end
           end.describe "#{self}, #{other_parser}"
         end
+
+        # A parser that tries to parse first using self then using other
+        def |(other_parser)
+          parser do |input|
+            first_result = self.call(input)
+
+            if first_result.kind_of?(Success)
+              first_result
+            else
+              other_parser.call(input)
+            end
+          end.describe "#{self} | #{other_parser}"
+        end
       end
 
     end

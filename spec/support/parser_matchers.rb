@@ -28,7 +28,7 @@ RSpec::Matchers.define :tokenize_and_parse do |input|
     res = do_parse(parser, input)
 
     if @expected_output and is_success?(res)
-      "expected that \"#{parser}\"'s result would be #{@expected_output}, was '#{res.result}"
+      "expected that \"#{parser}\"'s result would be #{@expected_output}, was '#{res.result}'"
     else
       "expected that #{parser} should tokenize and parse '#{input}'"
     end
