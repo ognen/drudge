@@ -15,7 +15,7 @@ module Hoister
       # The name of the command
       attr_reader :name
 
-      # The list of arguments
+      # The list of parameters
       attr_reader :params
 
       # The command's body
