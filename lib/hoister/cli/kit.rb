@@ -6,7 +6,7 @@ module Hoister
 
     # A kit is a set of commands that can be dispatched to
     class Kit
-      include Parsers::CommandParsers
+      include Parsers::ArgumentParsers
 
       # the name of the kit
       attr_accessor :name
@@ -32,7 +32,7 @@ module Hoister
 
       # returns the argument parser for this kit
       def argument_parser
-        commands.map { |c| command(c.name) & c.argument_parser }
+        commands.map { |c| collate_results(command(c.name) & c.argument_parser) }
                 .reduce { |p1, p2| p1 | p2 }
       end
 

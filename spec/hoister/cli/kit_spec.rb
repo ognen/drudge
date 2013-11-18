@@ -34,8 +34,8 @@ module Hoister
           describe "#argument_parser" do
             subject { kit.argument_parser }
 
-            it { should tokenize_and_parse(%w[hello]).as([[:command, 'hello'], [:eos]]) }
-            it { should tokenize_and_parse(%w[goodbye]).as([[:command, 'goodbye'], [:eos]]) }
+            it { should tokenize_and_parse(%w[hello]).as({args: %w[hello]}) }
+            it { should tokenize_and_parse(%w[goodbye]).as({args: %w[goodbye]}) }
 
             it { should_not tokenize_and_parse(%w[foo]) }
             it { should_not tokenize_and_parse(%w[hello someone]) }

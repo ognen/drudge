@@ -132,18 +132,42 @@ module Hoister
         end
       end
 
-      describe "argument parsers" do
+      describe "command & argument parsers" do
         include Parsers::ArgumentParsers
 
         describe ".arg" do
           context "arg parser for the arg named 'test'" do
             subject { arg(:test) }
 
-            it { should parse([[:val, "anything"]]) }
+            it { should tokenize_and_parse(%w[anything]).as({args: %w[anything]}) }
 
             it "should include the expected paraemeter name in the error message" do
               expect(subject.call([])).to eq(Failure("Expected a value for <test>", []))
             end
+          end
+
+          context "arg sequence" do
+            subject { collate_results arg(:first) & arg(:second) }
+
+            it { should tokenize_and_parse(%w[arg1 arg2]).as({args: %w[arg1 arg2]}) }
+            it { should_not tokenize_and_parse(%w[arg1]) }
+            it { should_not tokenize_and_parse(%w[]) }
+          end
+
+          context "arg sequence with :eos" do
+            subject { collate_results arg(:first) & arg(:second) & eos }
+
+            it { should tokenize_and_parse(%w[arg1 arg2]).as({args: %w[arg1 arg2]}) }
+            it { should_not tokenize_and_parse(%w[arg1 arg2 arg3]) }
+          end
+        end
+
+        describe ".command" do
+          context "command parser for command 'hello'" do
+            subject { command("hello") }
+
+            it { should tokenize_and_parse(%w[hello]).as({args: %w[hello]}) }
+            it { should_not tokenize_and_parse(%w[HELLO]) }
           end
         end
       end

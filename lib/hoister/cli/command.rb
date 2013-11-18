@@ -10,7 +10,7 @@ module Hoister
     # The body of the command is a lambda that accepts exactly the arguments
 
     class Command
-      include Parsers::BasicParsers
+      include Parsers::ArgumentParsers
 
       # The name of the command
       attr_reader :name
@@ -43,11 +43,13 @@ module Hoister
       def argument_parser
         parser = params.map(&:argument_parser).reduce { | a, b | a & b }
 
-        if parser
+        parser = if parser
           parser & eos
         else
           eos
         end
+
+        collate_results(parser)
       end
     end
 

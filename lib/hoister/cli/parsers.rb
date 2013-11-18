@@ -52,16 +52,22 @@ module Hoister
         end
 
         def Eos
-          [:eos]
+          {eos: true}
         end
 
         # convenience method that creates a parser proc extended with the usual 
         # parser combinators
         def parser(&prs)
-          prs.extend ParserCombinators
-          prs.extend ParserHelpers
+          include_in_singleton(prs, ParserCombinators, ParserHelpers)
 
           prs
+        end
+
+        protected 
+
+        def include_in_singleton(parser, *modules)
+          parser.singleton_class.send :include, *modules
+          parser
         end
       end
 
@@ -79,7 +85,7 @@ module Hoister
             when first[0] == :val && expected === first[1]
               Success(first[1], rest)
             else
-              Failure("Expected '#{first[1]}' to match /#{expected}/", input)
+              Failure("Expected '#{first[1]}' to match #{expected}", input)
             end
           end.describe expected
         end
@@ -101,21 +107,39 @@ module Hoister
 
         # parses a single argument with the provided name
         def arg(name, expected = /.*/)
-          value(expected).map { |a| [:arg, a] }
+          value(expected).map { |a| {args: [a]} }
                          .map_failure { |msg| "#{msg} for <#{name}>" }
                          .describe "#ARG<#{expected}>"
         end
-      end
-
-
-      module CommandParsers
-        include ArgumentParsers
 
         # parses a command
         def command(name)
-          value(name.to_s).map { |v| [:command, v] }
+          value(name.to_s).map { |v| {args: [v]} }
                           .describe("COMMAND<#{name}>")
         end
+
+        # a parser that collates the results 
+        def collate_results(parser)
+          parser.map do |results|
+            if Seq === results
+
+              results.reduce do |a, b|
+                a.merge(b) do |k, v1, v2|
+                  case k
+                  when :args
+                    v1 + v2
+                  else
+                    v2
+                  end
+                end
+              end.reject { |k| k == :eos }
+
+            else
+              results
+            end
+          end
+        end
+
       end
 
       module ParserHelpers
