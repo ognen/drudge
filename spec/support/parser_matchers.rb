@@ -1,8 +1,10 @@
+require 'hoister/cli/parsers/tokenizer'
+
 RSpec::Matchers.define :parse do |input|
   match do |parser|
     res = parser.call(input) 
 
-    Hoister::Cli::Parsers::Success === res and
+    Hoister::Cli::Parsers::ParseResults::Success === res and
       res.remaining != input and
       (res.result == @expected_output or not @expected_output)
   end
@@ -35,10 +37,10 @@ RSpec::Matchers.define :tokenize_and_parse do |input|
   end
 
   def do_parse(parser, input)
-    parser.call(Hoister::Cli::Parsers.tokenize(input))
+    parser.call(Hoister::Cli::Parsers::Tokenizer.tokenize(input))
   end
 
   def is_success?(result)
-    Hoister::Cli::Parsers::Success === result
+    Hoister::Cli::Parsers::ParseResults::Success === result
   end
 end

@@ -1,4 +1,6 @@
 require 'hoister/cli/kit'
+require 'hoister/cli/command'
+require 'hoister/cli/errors'
 
 module Hoister
   class Cli
@@ -6,6 +8,8 @@ module Hoister
     # A DSL that allows writing of a command line
     # tool (kit) as a class
     module ClassDSL
+
+      # Some aliases
 
       def self.included(cls)
         cls.singleton_class.send :include, ClassMethods

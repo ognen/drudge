@@ -5,8 +5,10 @@ Feature: Simple Commands
 
 
   Scenario: A simple command with no arguments is just a method call 
-    Given a script called "cli" with:
+    Given a Ruby script called "cli" with:
     """
+    require 'hoister/cli'
+
     class Cli < Hoister::Cli
 
       desc "verifies the project"
@@ -15,14 +17,18 @@ Feature: Simple Commands
       end
 
     end
+
+    Cli.dispatch
     """
     When I run `cli verify` 
     Then the output should contain "Verified."
 
 
-  Scenario: A method with an argument maps to a command in a script with one required argument
-    Given a script called "cli" with:
+  Scenario: A method with an argument maps to a command in a Ruby script with one required argument
+    Given a Ruby script called "cli" with:
     """
+    require 'hoister/cli'
+    
     class Cli < Hoister::Cli
 
       desc "greets someone"
@@ -30,27 +36,44 @@ Feature: Simple Commands
         puts "Hello #{someone}!"
       end
     end
+
+    Cli.dispatch
     """
     When I run `cli greet Santa`
     Then the output should contain "Hello Santa!"
 
   Scenario: Too many arguments are reported as an error
-    Given a script called "cli" with:
+    Given a Ruby script called "cli" with:
     """
+    require 'hoister/cli'
+
     class Cli < Hoister::Cli
 
-      desc "greet someone"
+      desc "greet someone someoneelse"
       def greet(someone)
         puts "Hello #{someone}!"
       end
     end
+
+    Cli.dispatch
     """
     When I run `cli greet Santa Clause`
-    Then the output should contain "error: too many arguments for 'cli greet' (2 instead of 1)"
+    Then the output should contain:
+    """
+    error: extra command line arguments provided:
+
+        cli greet Santa Clause
+                        ~~~~~~
+
+    expected:
+        cli greet <someone>
+    """
 
   Scenario: A required parameter must be provided
-    Given a script called "cli" with:
+    Given a Ruby script called "cli" with:
     """
+    require 'hoister/cli'
+
     class Cli < Hoister::Cli
 
       desc "greets someone"
@@ -58,9 +81,46 @@ Feature: Simple Commands
         puts "Hello #{someone}!"
       end
     end
+
+    Cli.dispatch
     """
     When I run `cli greet`
-    Then the output should contain "error: required argument <someone> missing for 'cli greet'"
+    Then the output should contain:
+    """
+    error: required argument <someone> missing:
 
+        cli greet 
+                  ^
 
+    expected:
 
+        cli greet <someone>
+    """
+
+  Scenario: The user is notified if a command is improperly entered
+    Given a Ruby script called "cli" with:
+    """
+    require 'hoister/cli'
+
+    class Cli < Hoister::Cli
+
+      desc "greets someone"
+      def greet(someone)
+        puts "Hello #{someone}!"
+      end
+    end
+
+    Cli.dispatch
+    """
+    When I run `cli great`
+    Then the output should contain:
+    """
+    error: unknown command 'great':
+
+        cli great
+            ~~~~~
+
+    expected: one of
+
+        cli greet <someone>
+    """

@@ -7,101 +7,17 @@ module Hoister
   class Cli
 
     describe Parsers do
+      include Parsers
 
-      describe "#tokenize" do
+      describe "#parser" do
+        it "takes a block and extends it with ArgumentParser" do
+          p = parser { |input| EOS }
 
-        it "converts an array of command line arguments into an array of sexps" do
-          tokens = Parsers.tokenize(%w[hello world])
-
-          expect(tokens).to be_kind_of(Enumerable)
-          
-          tokens.each do |token|
-            expect(token).to be_kind_of(Enumerable)
-            expect(token[0]).to be_kind_of(Symbol)
-          end
-        end
-
-        it "converts an ordinary argument 'arg' into the sexp [:val, 'arg']" do
-          tokens = Parsers.tokenize(%w[hello])
-
-          expect(tokens).to eq [[:val, 'hello']]
-        end
-      end
-
-      describe "a parser function (lambda) that recognizes a [:val, something] sexp and returns that 'something'" do
-        include Parsers
-        include Parsers::BasicParsers
-
-        let(:parser) { -> (input) { if input[0][0] == :val then Success(input[0][1], input.drop(1)) else Failure("f", input) end } }
-
-        it "accepts an enum of sexps (obtained from tokenize) as its single argument" do
-          expect {parser.call([[:val, "test"]])}.not_to raise_error
-        end
-
-        context "given the input [[:val, 'test']]" do
-          it "parses the value and consumes the input that produced it" do 
-            expect(parser.call([[:val, "test"]])).to eq(Success("test", []))
-          end
-        end
-
-        context "given the input [[:val, 'test'], [:foo, 'bar']]" do
-          it "parses the value and return the remaining input" do
-            expect(parser.call([[:val, "test"], [:foo, "bar"]])).to eq(Success("test", [[:foo, "bar"]]))
-          end
-        end
-
-        context "given the input [[:foo, 'bar'], [:val, 'test']]" do
-          it "doesn't parse the input and returns Failure" do
-            input = [[:foo, 'bar'], [:val, 'test']]
-            expect(parser.call(input)).to eq(Failure("f", input))
-          end
-        end
-      end
-
-      describe Parsers::FundamentalParser do
-        include Parsers::FundamentalParser
-
-        describe "#parser" do
-          it "takes a block and extends it with ParserCombinators" do
-            p = parser { |input| EOS }
-
-            expect(p.singleton_methods).to include(*Parsers::ParserCombinators.instance_methods)
-          end
-        end
-
-        context "a parser built with #parser" do
-          subject do
-            parser do |input|
-              if input[0][0] == :val && input[0][1] == "hello"
-                Success(input[0][1], input.drop(1))
-              else
-                Failure("f", input)
-              end
-            end
-          end
-
-          describe "#parse" do
-            it "tokenizes an array of [command line] args and parses it at once" do
-
-              expect(subject.parse(%w[hello world])).to eq(Success("hello", [[:val, "world"]]))
-            end
-          end
-
-          describe "#parse!" do
-            it "is like #parse, but returns just the result when successful" do
-              expect(subject.parse!(%w[hello world])).to eq("hello")
-            end
-
-            it "upon failed parse, it raises a CommandArgumentError" do
-              expect { subject.parse!(%w[world hello])}.to raise_error(ParseError)
-            end
-          end
+          expect(p).to be_kind_of(Parsers::ArgumentParser) 
         end
       end
 
       describe "basic parsers" do
-        include Parsers::BasicParsers
-
         describe ".value" do
           context "without arguments" do 
             subject { value }
@@ -133,13 +49,12 @@ module Hoister
       end
 
       describe "command & argument parsers" do
-        include Parsers::ArgumentParsers
 
         describe ".arg" do
           context "arg parser for the arg named 'test'" do
             subject { arg(:test) }
 
-            it { should tokenize_and_parse(%w[anything]).as({args: %w[anything]}) }
+            it { should tokenize_and_parse(%w[anything]).as([:arg, "anything"]) }
 
             it "should include the expected paraemeter name in the error message" do
               expect(subject.call([])).to eq(Failure("Expected a value for <test>", []))
@@ -147,17 +62,18 @@ module Hoister
           end
 
           context "arg sequence" do
-            subject { collate_results arg(:first) & arg(:second) }
+            subject { arg(:first) > arg(:second) }
 
-            it { should tokenize_and_parse(%w[arg1 arg2]).as({args: %w[arg1 arg2]}) }
+            it { should tokenize_and_parse(%w[arg1 arg2]).as([[:arg, "arg1"], [:arg, "arg2"]]) }
             it { should_not tokenize_and_parse(%w[arg1]) }
             it { should_not tokenize_and_parse(%w[]) }
           end
 
           context "arg sequence with :eos" do
-            subject { collate_results arg(:first) & arg(:second) & eos }
+            let(:p) { arg(:first) > arg(:second) > eos }
+            subject { p }
 
-            it { should tokenize_and_parse(%w[arg1 arg2]).as({args: %w[arg1 arg2]}) }
+            it { should tokenize_and_parse(%w[arg1 arg2]).as([[:arg, "arg1"], [:arg, "arg2"]]) }
             it { should_not tokenize_and_parse(%w[arg1 arg2 arg3]) }
           end
         end
@@ -166,54 +82,55 @@ module Hoister
           context "command parser for command 'hello'" do
             subject { command("hello") }
 
-            it { should tokenize_and_parse(%w[hello]).as({args: %w[hello]}) }
+            it { should tokenize_and_parse(%w[hello]).as([:arg, "hello"]) }
             it { should_not tokenize_and_parse(%w[HELLO]) }
           end
         end
+
+        describe "collated arguments" do
+          let(:p) {  command("hello") > arg(:first) > arg(:second) <= eos }
+          subject { p.collated_arguments }
+
+          it { should tokenize_and_parse(%w[hello first second]).as({args: %w[hello first second]}) } 
+        end
+
+
       end
 
-      describe "parser combinators" do
-        include Parsers::BasicParsers
 
-        describe ".as" do
-          context "applied on a value('something') parser" do
-            subject { value('something').map { |r| { args: [r] } } }
+      describe Parsers::ArgumentParser do
+        include Parsers::ParseResults
 
-            it { should parse([[:val, "something"]]).as({ args: ['something']}) } 
-            it { should_not parse([[:val, "something else"]]) }
-          end
-        end
-
-        describe ".&" do
-          context "value('something') & value(/-t.+/)" do
-            subject { value('something') & value(/-t.+/) }
-
-            it { should parse([[:val, 'something'], [:val, '-tower']]).as(['something', '-tower']) }
-            it { should parse([[:val, 'something'], [:val, '-tower']]) }
-            it { should_not parse([[:val, 'something']])}
+        context "a parser built with #parser" do
+          subject do
+            parser do |input|
+              if input[0][0] == :val && input[0][1] == "hello"
+                Success(Single(input[0][1]), input.drop(1))
+              else
+                Failure("f", input)
+              end
+            end
           end
 
-          context "value('something') & value('followed by') & value('else')" do
-            subject { value('something') & value('followed by') & value('else') }
+          describe "#parse" do
+            it "tokenizes an array of [command line] args and parses it at once" do
 
-            it { should parse([[:val, 'something'], [:val, 'followed by'], [:val, 'else']]).as(['something', 'followed by', 'else']) }
-            it { should_not parse([[:val, 'something']]) }
-            it { should_not parse([:val, 'something'], [:val, 'other'], [:val, 'else']) }
+              expect(subject.parse(%w[hello world])).to eq(Success(Single("hello"), [[:val, "world", {:loc=>[1, 0, 5]}]]))
+            end
           end
-        end
 
-        describe ".|" do
-          context "value('something') | value('else')" do
-            subject { value('something') | value('else') }
+          describe "#parse!" do
+            it "is like #parse, but returns just the result when successful" do
+              expect(subject.parse!(%w[hello world])).to eq("hello")
+            end
 
-            it { should tokenize_and_parse(%w[something]).as('something') }
-            it { should tokenize_and_parse(%w[else]).as('else') }
-            it { should_not tokenize_and_parse(%w[other stuff]) }
-
-            its(:to_s) { should eq("something | else") }
+            it "upon failed parse, it raises a CommandArgumentError" do
+              expect { subject.parse!(%w[world hello])}.to raise_error(ParseError)
+            end
           end
         end
       end
+
     end
   end
 end

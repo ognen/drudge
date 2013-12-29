@@ -14,9 +14,10 @@ module Hoister
     class ParseError < StandardError
 
       attr_reader :remaining_input
+      attr_reader :input
 
-      def initialize(remaining_input)
-        @remaining_input = remaining_input
+      def initialize(input, remaining_input)
+        @input, @remaining_input = input, remaining_input
       end
       
     end
