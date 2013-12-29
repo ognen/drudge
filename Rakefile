@@ -5,7 +5,7 @@ require "rspec/core/rake_task"
 
 
 Cucumber::Rake::Task.new(:features) do |t|
-  t.cucumber_opts = "features --format pretty"
+  t.cucumber_opts = "features"
 end
 
 namespace :spec do
