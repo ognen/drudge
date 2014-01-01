@@ -40,6 +40,24 @@ module Hoister
 
         end
 
+        describe ".commit" do
+          let(:prs) do
+            p = parser do |input|
+              Failure("fail", input)
+            end
+
+            commit(p)
+          end
+
+          it "converts parser Failures into Errors" do
+            input = [[:val, "Hello"]]
+            result = prs[input]
+
+            expect(result).to be_kind_of(Error)
+            expect(result.message).to eq("fail")
+          end
+        end
+
         describe "parser combinators" do
 
           # a parser that expects a value declared in +expected 
