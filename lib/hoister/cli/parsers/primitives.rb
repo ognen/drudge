@@ -15,6 +15,23 @@ module Hoister
           prs
         end
 
+        # Commits the provided parser. If +prs+ returns
+        # a +Failure+, it will be converted into an +Error+ that 
+        # will stop backtracking inside a '|' operator
+        def commit(prs)
+          parser do |input|
+            result = prs[input]
+
+            case result
+            when Success, Error
+              result
+            when Failure
+              Error(result.message, result.remaining)
+            end
+          end.describe prs.to_s
+        end
+
+
         # Returns the module which is to be mixed in in every
         # constructed parser. Can be overriden to mix in 
         # additonal features

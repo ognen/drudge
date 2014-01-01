@@ -27,7 +27,7 @@ module Hoister
           puts "#{e.command}: #{e.message}"
         rescue ParseError => pe
           $stderr.puts <<-EOS.undent
-            error: #{pe.message}
+            error: #{pe.message}:
 
                 #{Tokenizer.untokenize(pe.input)}
                 #{Tokenizer.underline_token(pe.input, 

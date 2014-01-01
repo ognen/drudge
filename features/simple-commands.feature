@@ -124,3 +124,39 @@ Feature: Simple Commands
 
         cli greet <someone>
     """
+
+  Scenario: The error reported relates to the command being executed
+    Given a Ruby script called "cli" with:
+    """
+    require 'hoister/cli'
+
+    class Cli < Hoister::Cli
+
+      desc "greets someone"
+      def greet(someone)
+        puts "Hello #{someone}!"
+      end
+
+      desc "hello worlds"
+      def hello(world)
+        puts "Hello #{world}!"
+      end
+
+      desc "Third"
+      def third
+        puts "Hello"
+      end
+    end
+
+    Cli.dispatch
+    """
+    When I run `cli hello world err`
+    Then the output should contain:
+    """
+    error: extra command line arguments provided:
+        cli hello world err
+                        ~~~
+
+    expected:
+        cli hello <world>
+    """
