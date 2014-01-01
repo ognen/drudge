@@ -69,7 +69,7 @@ module Hoister
               else
                 result
               end
-            end
+            end.describe(self.to_s)
           end
 
           # sequening: returns a parser that succeeds if self succeeds,
