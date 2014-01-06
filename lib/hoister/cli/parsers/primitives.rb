@@ -28,7 +28,25 @@ module Hoister
             when Failure
               Error(result.message, result.remaining)
             end
-          end.describe prs.to_s
+          end.describe(prs.to_s)
+        end
+
+        # Makes the provided parser into a *phrase*.
+        # A phrase will set an expectation to a NoSuccess result
+        # equal to the description of the parser
+        def phrase(prs)
+          parser do |input|
+            result = prs[input]
+
+            case result
+            when Failure
+              Failure(result.message, prs.to_s, result.remaining)
+            when Error
+              Error(result.message, prs.to_s, result.remaining)
+            when Success
+              result
+            end
+          end.describe(prs.to_s)
         end
 
 
@@ -84,19 +102,19 @@ module Hoister
 
                 end
               end
-            end.describe("#{self} #{other}")
+            end.describe("#{self.to_s} #{other.to_s}")
           end
 
           # sequencing: same as '>' but returns only the result of the +other+ 
           # parser, discarding the result of the first 
           def >=(other)
-            (self.discard > other).describe("#{self} #{other}")
+            (self.discard > other)
           end
 
           # sequencing: same as '>' but returns only the result of +self+, disregarding
           # the result of the +other+ 
           def <=(other)
-            (self > other.discard).describe("#{self} #{other}")
+            (self > other.discard)
           end
 
           # alternation: try this parser and if it fails (but not with an Error)
@@ -120,7 +138,7 @@ module Hoister
               when Error
                 result1
               end
-            end.describe("#{self} | #{other}")
+            end.describe("#{self.to_s} | #{other.to_s}")
           end
 
           # attach a description to the parser

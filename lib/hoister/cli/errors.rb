@@ -15,9 +15,10 @@ module Hoister
 
       attr_reader :remaining_input
       attr_reader :input
+      attr_reader :expectation
 
-      def initialize(input, remaining_input)
-        @input, @remaining_input = input, remaining_input
+      def initialize(input, remaining_input, expectation)
+        @input, @remaining_input, @expectation = input, remaining_input, expectation
       end
       
     end

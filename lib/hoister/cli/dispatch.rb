@@ -32,6 +32,9 @@ module Hoister
                 #{Tokenizer.untokenize(pe.input)}
                 #{Tokenizer.underline_token(pe.input, 
                                             pe.remaining_input.first)}
+
+            expected:
+                #{pe.expectation}
           EOS
 
 

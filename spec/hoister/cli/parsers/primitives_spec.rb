@@ -37,7 +37,22 @@ module Hoister
               expect(p[input]).to eq(Failure("f", input))
             end
           end
+        end
 
+        # a parser that expects a value declared in +expected 
+        def value(expected)
+          parser do |input|
+            first, *rest = input
+
+            case 
+            when first.nil? 
+              Failure("Expected a value", input)
+            when first[0] == :val && expected === first[1]
+              Success(Single(first[1]), rest)
+            else
+              Failure("'#{first[1]}' doesn't match #{expected}", input)
+            end
+          end.describe expected
         end
 
         describe ".commit" do
@@ -58,23 +73,44 @@ module Hoister
           end
         end
 
-        describe "parser combinators" do
+        describe ".phrase" do
+          context "a phrase of two words" do
+            subject(:prs) do
+              phrase(value("hello") > value("world"))
+            end
 
-          # a parser that expects a value declared in +expected 
-          def value(expected)
-            parser do |input|
-              first, *rest = input
+            let(:input) { [[:val, "hello"], [:val, "you-there"]] }
 
-              case 
-              when first.nil? 
-                Failure("Expected a value", input)
-              when first[0] == :val && expected === first[1]
-                Success(Single(first[1]), rest)
-              else
-                Failure("'#{first[1]}' doesn't match #{expected}", input)
-              end
-            end.describe expected
+            it "adds expectation to a NoSuccess outcome" do
+              outcome = prs[input]
+
+              expect(outcome.expectation).to eq("hello world")
+            end
           end
+
+          context "a word followed by a phrase" do
+            subject(:prs) do
+              value("hello") > phrase(value("nice") > value("world"))
+            end
+
+
+            it "only sets an expectation when the error is inside the phrase" do
+              input = [[:val, "hello"], [:val, "cruel"], [:val, "world"]] 
+              outcome = prs[input]
+
+              expect(outcome.expectation).to eq("nice world")
+            end
+
+            it "does not set any expectation when the error is outside the phrase" do
+              input =  [[:val, "something"], [:val, "else"]]
+              outcome = prs[input]
+
+              expect(outcome.expectation).to be_nil
+            end
+          end
+        end
+
+        describe "parser combinators" do
 
           describe ".map" do
             context "applied on a value('something') parser" do

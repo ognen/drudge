@@ -23,7 +23,7 @@ module Hoister
           else
             Failure("'#{value}' doesn't match #{expected}", input)
           end
-        end.describe expected
+        end.describe expected.to_s
       end
 
       # matches the end of the stream
@@ -47,7 +47,7 @@ module Hoister
       # parses a command
       def command(name)
         value(name.to_s).map { |v| [:arg, v] }
-                        .describe name
+                        .describe(name.to_s)
       end
 
 
@@ -74,7 +74,7 @@ module Hoister
           if ParseResults::Success === res
             res.result
           else
-            raise ParseError.new(input, res.remaining), res.message
+            raise ParseError.new(input, res.remaining, res.expectation), res.message
           end
         end
 

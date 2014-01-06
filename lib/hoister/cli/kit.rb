@@ -33,7 +33,7 @@ module Hoister
 
       # returns the argument parser for this kit
       def argument_parser
-        commands.map { |c| (command(name) > command(c.name) > commit(c.argument_parser)).collated_arguments }
+        commands.map { |c| phrase(command(name) > command(c.name) > commit(c.argument_parser)).collated_arguments }
                 .reduce { |p1, p2| p1 | p2 }
       end
 

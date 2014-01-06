@@ -93,7 +93,6 @@ Feature: Simple Commands
                   ^
 
     expected:
-
         cli greet <someone>
     """
 
