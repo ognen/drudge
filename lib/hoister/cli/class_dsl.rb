@@ -9,12 +9,12 @@ module Hoister
     # tool (kit) as a class
     module ClassDSL
 
-      # Some aliases
 
       def self.included(cls)
         cls.singleton_class.send :include, ClassMethods
       end
 
+      # converts this into a (command) kit, 
       def to_kit(name = $0)
         Kit.new name, build_commands(self.class.__commands)
       end
