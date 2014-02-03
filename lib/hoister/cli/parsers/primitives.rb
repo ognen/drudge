@@ -31,25 +31,6 @@ module Hoister
           end.describe(prs.to_s)
         end
 
-        # Makes the provided parser into a *phrase*.
-        # A phrase will set an expectation to a NoSuccess result
-        # equal to the description of the parser
-        def phrase(prs)
-          parser do |input|
-            result = prs[input]
-
-            case result
-            when Failure
-              Failure(result.message, prs.to_s, result.remaining)
-            when Error
-              Error(result.message, prs.to_s, result.remaining)
-            when Success
-              result
-            end
-          end.describe(prs.to_s)
-        end
-
-
         # Returns the module which is to be mixed in in every
         # constructed parser. Can be overriden to mix in 
         # additonal features

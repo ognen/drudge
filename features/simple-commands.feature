@@ -64,9 +64,6 @@ Feature: Simple Commands
 
         cli greet Santa Clause
                         ~~~~~~
-
-    expected:
-        cli greet <someone>
     """
 
   Scenario: A required parameter must be provided
@@ -91,9 +88,6 @@ Feature: Simple Commands
 
         cli greet
                   ^
-
-    expected:
-        cli greet <someone>
     """
 
   Scenario: The user is notified if a command is improperly entered
@@ -107,6 +101,12 @@ Feature: Simple Commands
       def greet(someone)
         puts "Hello #{someone}!"
       end
+
+      desc "says something"
+      def say(something)
+        puts "Saying #{something}!"
+      end
+
     end
 
     Cli.dispatch
@@ -118,9 +118,6 @@ Feature: Simple Commands
 
         cli great
             ~~~~~
-
-    expected: one of
-        cli greet <someone>
     """
 
   Scenario: The error reported relates to the command being executed
@@ -155,7 +152,4 @@ Feature: Simple Commands
     
         cli hello world err
                         ~~~
-
-    expected:
-        cli hello <world>
     """

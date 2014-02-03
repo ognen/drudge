@@ -47,6 +47,7 @@ module Hoister
       # parses a command
       def command(name)
         value(name.to_s).map { |v| [:arg, v] }
+                        .with_failure_message { |msg, ((_, val), *_)| "unknown command '#{val}'" }
                         .describe(name.to_s)
       end
 
@@ -74,7 +75,7 @@ module Hoister
           if ParseResults::Success === res
             res.result
           else
-            raise ParseError.new(input, res.remaining, res.expectation), res.message
+            raise ParseError.new(input, res.remaining), res.message
           end
         end
 

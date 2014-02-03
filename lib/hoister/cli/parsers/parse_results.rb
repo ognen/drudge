@@ -12,12 +12,12 @@ module Hoister
             Success.new(value, remaining) 
           end
 
-          def Failure(message, expectation = nil, remaining)
-            Failure.new(message, expectation, remaining)
+          def Failure(message, remaining)
+            Failure.new(message, remaining)
           end
 
-          def Error(message, expectation = nil, remaining)
-            Error.new(message, expectation, remaining)
+          def Error(message, remaining)
+            Error.new(message, remaining)
           end
 
           def Empty()
@@ -100,12 +100,12 @@ module Hoister
         end
 
         # A failure that allows for backtracking
-        Failure = Struct.new(:message, :expectation, :remaining) do
+        Failure = Struct.new(:message, :remaining) do
           include NotSuccess
         end
 
         # An error doesn't allow backtracking
-        Error = Struct.new(:message, :expectation, :remaining) do
+        Error = Struct.new(:message, :remaining) do
           include NotSuccess
         end
 
