@@ -17,7 +17,7 @@ module Hoister
 
           case 
           when input.nil? || input.empty?
-            Failure("Expected a value", input)
+            Failure("expected a value", input)
           when kind == :val && expected === value
             Success(Single(value), rest)
           else

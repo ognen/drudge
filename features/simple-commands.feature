@@ -87,9 +87,9 @@ Feature: Simple Commands
     When I run `cli greet`
     Then the output should contain:
     """
-    error: required argument <someone> missing:
+    error: expected a value for <someone>:
 
-        cli greet 
+        cli greet
                   ^
 
     expected:
@@ -120,7 +120,6 @@ Feature: Simple Commands
             ~~~~~
 
     expected: one of
-
         cli greet <someone>
     """
 
@@ -153,6 +152,7 @@ Feature: Simple Commands
     Then the output should contain:
     """
     error: extra command line arguments provided:
+    
         cli hello world err
                         ~~~
 
