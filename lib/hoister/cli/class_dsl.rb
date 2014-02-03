@@ -60,6 +60,7 @@ module Hoister
         private 
 
         def merged_commands(newer, older)
+          # review: this method seems too complex. find a simpler implemetnation
           case
           when older.empty? then newer
           when newer.empty? then older
