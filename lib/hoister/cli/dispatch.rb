@@ -18,8 +18,8 @@ module Hoister
           cli_kit       = self.new.to_kit(command_name)
           complete_args = command_name, *args
 
-          argument_parser              = cli_kit.argument_parser
-          cli_name, *command_arguments = argument_parser.parse!(complete_args)[:args]
+          argument_parser       = cli_kit.argument_parser
+          _, *command_arguments = argument_parser.parse!(complete_args)[:args]
 
           cli_kit.dispatch(*command_arguments)
 
