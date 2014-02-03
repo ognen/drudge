@@ -140,7 +140,7 @@ module Hoister
               when Success
                 result
               when Failure
-                Failure(failure_converter[result.message], result.remaining)
+                Failure(failure_converter[result.message, input], result.remaining)
               end
             end.describe self.to_s
           end
