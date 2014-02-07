@@ -51,10 +51,15 @@ module Hoister
           end
 
           # like map but yields the ParseValue instead of the actuall 
-          # wrapped file. Usefull if you want to know if the result was 
+          # wrapped value. Usefull if you want to know if the result was 
           # a sequence or not
           def map_parse_value(&f)
             parser { |input| self[input].map_parse_value &f }.describe(self.to_s)
+          end
+
+          # likemap but yields the ParseResult instead of the vrapped value
+          def map_parse_result(&f)
+            parser { |input| f[self[input]] }.describe(self.to_s)
           end
 
           # Returns a parser that, if self is successful will dicard its result
@@ -121,6 +126,19 @@ module Hoister
               end
             end.describe("#{self.to_s} | #{other.to_s}")
           end
+
+          # makes this parser opitonal
+          def optional
+            self.map_parse_result do |parse_result|
+              case parse_result
+              when Success
+                parse_result
+              else
+                Success(Empty(), parse_result.remaining)
+              end
+            end.describe("[#{self.to_s}]")
+          end
+
 
           # attach a description to the parser
           def describe(str)

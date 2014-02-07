@@ -138,6 +138,30 @@ module Hoister
               its(:to_s) { should eq("something | else") }
             end
           end
+
+          describe ".optonal" do
+            context "value('something').optional"  do
+              subject { value('something').optional }
+
+              it { should tokenize_and_parse(%w[something]).as('something') }
+              it { should tokenize_and_parse(%w[]).as(nil) }
+              it { should tokenize_and_parse(%w[other]).as(nil) }
+            end
+
+            context "value('something').optional > value(/.+/)" do
+              subject { value('something').optional > value(/.+/) }
+
+              it { should tokenize_and_parse(%w[something other]).as(['something', 'other']) }
+              it { should tokenize_and_parse(%w[other]).as('other') }
+
+              it { should_not tokenize_and_parse(%w[something]).as('something') }
+              it { should_not tokenize_and_parse(%w[]) }
+
+            end
+
+          end
+
+
         end        
       end
     end
