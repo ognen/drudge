@@ -51,31 +51,46 @@ module Hoister
       describe "command & argument parsers" do
 
         describe ".arg" do
-          context "arg parser for the arg named 'test'" do
-            subject { arg(:test) }
 
-            it { should tokenize_and_parse(%w[anything]).as([:arg, "anything"]) }
+          context "with a single argument" do
+            context "arg parser for the arg named 'test'" do
+              subject { arg(:test) }
 
-            it "should include the expected paraemeter name in the error message" do
-              expect(subject.call([])).to eq(Failure("expected a value for <test>", []))
+              it { should tokenize_and_parse(%w[anything]).as([:arg, "anything"]) }
+
+              it "should include the expected paraemeter name in the error message" do
+                expect(subject.call([])).to eq(Failure("expected a value for <test>", []))
+              end
+            end
+
+            context "arg sequence" do
+              subject { arg(:first) > arg(:second) }
+
+              it { should tokenize_and_parse(%w[arg1 arg2]).as([[:arg, "arg1"], [:arg, "arg2"]]) }
+              it { should_not tokenize_and_parse(%w[arg1]) }
+              it { should_not tokenize_and_parse(%w[]) }
+            end
+
+            context "arg sequence with :eos" do
+              let(:p) { arg(:first) > arg(:second) > eos }
+              subject { p }
+
+              it { should tokenize_and_parse(%w[arg1 arg2]).as([[:arg, "arg1"], [:arg, "arg2"]]) }
+              it { should_not tokenize_and_parse(%w[arg1 arg2 arg3]) }
             end
           end
 
-          context "arg sequence" do
-            subject { arg(:first) > arg(:second) }
+          context "with a provided parser" do
+              subject { arg(:test, value("TEST")) }
+            describe "arg parser that acceptes only 'TEST'" do
 
-            it { should tokenize_and_parse(%w[arg1 arg2]).as([[:arg, "arg1"], [:arg, "arg2"]]) }
-            it { should_not tokenize_and_parse(%w[arg1]) }
-            it { should_not tokenize_and_parse(%w[]) }
+              it { should tokenize_and_parse(%w[TEST]).as([:arg, "TEST"]) }
+
+              it { should_not tokenize_and_parse(%w[anything]) }
+            end
+
           end
 
-          context "arg sequence with :eos" do
-            let(:p) { arg(:first) > arg(:second) > eos }
-            subject { p }
-
-            it { should tokenize_and_parse(%w[arg1 arg2]).as([[:arg, "arg1"], [:arg, "arg2"]]) }
-            it { should_not tokenize_and_parse(%w[arg1 arg2 arg3]) }
-          end
         end
 
         describe ".command" do

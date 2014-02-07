@@ -38,10 +38,10 @@ module Hoister
       end
 
       # parses a single argument with the provided name
-      def arg(name, expected = /.*/)
-        value(expected).map { |a| [:arg, a] }
-                       .with_failure_message { |msg| "#{msg} for <#{name}>" }
-                       .describe "<#{name}>"
+      def arg(name, expected = value(/.*/))
+        expected.map { |a| [:arg, a] }
+                .with_failure_message { |msg| "#{msg} for <#{name}>" }
+                .describe "<#{name}>"
       end
 
       # parses a command
