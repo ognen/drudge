@@ -41,15 +41,19 @@ module Hoister
       end
 
       def argument_parser
-        parser = params.map(&:argument_parser).reduce { | a, b | a > b }
+        end_of_args = eos("extra command line arguments provided")
 
-        parser = if parser
-          parser <= eos("extra command line arguments provided")
-        else
-          eos("command takes no arguments")
+        parser = params.reverse.reduce(end_of_args) do | rest, param |
+          p = param.argument_parser
+
+          if param.optional?
+            ((p > rest) | rest).describe("[#{p}] #{rest}")
+          else
+            p > rest
+          end
         end
-
       end
+      
     end
 
     # Represents a command parameter
