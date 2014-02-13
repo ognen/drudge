@@ -40,6 +40,7 @@ module Hoister
         raise CommandArgumentError.new(name), e.message
       end
 
+      # creates an argument parser for the command
       def argument_parser
         end_of_args = eos("extra command line arguments provided")
 
@@ -53,7 +54,7 @@ module Hoister
           end
         end
       end
-      
+
     end
 
     # Represents a command parameter
@@ -80,11 +81,7 @@ module Hoister
       # returns a parser that is able to parse arguments
       # fitting this parameter
       def argument_parser
-        if optional?
-          arg(name, value(/.+/).optional)
-        else
-          arg(name, value(/.+/))
-        end
+        arg(name, value(/.+/))
       end
 
       # factory methods for every type of parameter
