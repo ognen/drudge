@@ -19,7 +19,7 @@ Feature: Optional Arguments
 
     Cli.dispatch
     """
-    When I run `cli Hello` 
+    When I run `cli greet Hello` 
     Then the output should contain "Santa says: Hello"
 
   Scenario: Optional arguments in the middle of the arg list
@@ -38,7 +38,7 @@ Feature: Optional Arguments
 
     Cli.dispatch
     """
-    When I run `cli Hello Sam` 
+    When I run `cli greet Hello Sam` 
     Then the output should contain "Santa says to Sam: Hello"
 
 
@@ -58,7 +58,7 @@ Feature: Optional Arguments
 
     Cli.dispatch
     """
-    When I run `cli Hello Farmer Sam` 
+    When I run `cli greet Hello Farmer Sam` 
     Then the output should contain "Farmer says to Sam: Hello"
 
 

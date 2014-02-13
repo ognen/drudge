@@ -64,15 +64,23 @@ module Hoister
       # the  argument's type
       attr_reader :type
 
-      def initialize(name, type)
+      attr_reader :optional
+      alias_method :optional?, :optional
+      
+      def initialize(name, type, optional = false)
         @name = name.to_sym
         @type = type.to_sym
+        @optional = !! optional 
       end
 
       # returns a parser that is able to parse arguments
       # fitting this parameter
       def argument_parser
-        arg(name)
+        if optional?
+          arg(name, value(/.+/).optional)
+        else
+          arg(name, value(/.+/))
+        end
       end
 
       # factory methods for every type of parameter

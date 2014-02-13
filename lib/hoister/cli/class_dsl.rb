@@ -94,7 +94,8 @@ module Hoister
         def parse_command_parameters(method_parameters)
           method_parameters.map do |kind, name|
             case kind
-            when :req, :opt then Param.any(name)
+            when :req then Param.any(name)
+            when :opt then Param.any(name, true)
             else raise "Unsupported parameter type"
             end
           end
