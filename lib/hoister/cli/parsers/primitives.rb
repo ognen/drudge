@@ -145,6 +145,36 @@ module Hoister
             end.describe("[#{self.to_s}]")
           end
 
+          # returns a parser that repeatedly parses 
+          # with +self+ until it fails
+          def repeats(kind = :*)
+            case kind
+            when :* then rep1 | success(Empty())
+            when :+ then rep1
+            else raise "Unknown repetition kind for #{self}"
+            end
+          end
+
+          def rep1
+            parser do |input|
+              current = result = self[input]
+
+              while Success === current do
+                current = self[current.remaining]
+
+                if Success === current
+                  result = Success(result.parse_result + current.parse_result, current.remaining)
+                end
+
+              end
+
+              result
+            end
+          end
+          private :rep1
+
+
+
 
           # attach a description to the parser
           def describe(str)

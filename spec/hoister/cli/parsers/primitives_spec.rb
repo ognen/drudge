@@ -156,11 +156,57 @@ module Hoister
 
               it { should_not tokenize_and_parse(%w[something]).as('something') }
               it { should_not tokenize_and_parse(%w[]) }
-
             end
-
           end
 
+
+          describe ".repeats" do
+            shared_examples "repetitive parser" do |word|
+              it { should tokenize_and_parse([word]).as(word) }
+              it { should tokenize_and_parse([word, word]).as([word, word]) } 
+              it { should tokenize_and_parse([word, word, word]).as([word, word, word]) }
+              it { should tokenize_and_parse([word, word, "not-#{word}"]).as([word, word]) }
+            end
+
+            context "zero or more repetitions" do
+
+              describe "without followed_by" do
+
+                shared_examples "parser for zero or more repetitions" do |word|
+                  it { should tokenize_and_parse(["not-#{word}"]).as(nil) }
+                  it { should tokenize_and_parse([]).as(nil) }
+                end
+
+                describe "no arguments means repeats(:*)" do
+                  subject { value('hi').repeats }
+                  it_behaves_like "repetitive parser", 'hi'
+                  it_behaves_like  "parser for zero or more repetitions" , 'hi'
+                end
+
+                describe "repeats(:*)" do
+                  subject { value('hi').repeats(:*) }
+
+                  it_behaves_like "repetitive parser", 'hi'
+                  it_behaves_like  "parser for zero or more repetitions" , 'hi'
+                end
+              end
+
+              describe "with followed_by" do
+              end
+            end
+
+            context "one or more repetitions" do
+              describe "repeats(:+)" do
+                subject { value('hi').repeats(:+) }
+
+                it_behaves_like "repetitive parser", 'hi'
+
+                it { should_not tokenize_and_parse(["not-hi"]) }
+                it { should_not tokenize_and_parse([]) }
+
+              end
+            end
+          end
 
         end        
       end
