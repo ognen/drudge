@@ -31,6 +31,12 @@ module Hoister
           end.describe(prs.to_s)
         end
 
+        # returns a parser that always succeeds with the provided ParseValue
+        def success(parse_value)
+          parser { |input| Success(parse_value, input) }
+        end
+
+
         # Returns the module which is to be mixed in in every
         # constructed parser. Can be overriden to mix in 
         # additonal features
