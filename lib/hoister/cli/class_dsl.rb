@@ -95,7 +95,8 @@ module Hoister
           method_parameters.map do |kind, name|
             case kind
             when :req then Param.any(name)
-            when :opt then Param.any(name, true)
+            when :opt then Param.any(name, optional: true)
+            when :rest then Param.any(name, splash: true)
             else raise "Unsupported parameter type"
             end
           end
