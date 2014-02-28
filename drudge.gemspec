@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'hoister/cli/version'
+require 'drudge/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "hoister-cli"
-  spec.version       = Hoister::Cli::VERSION
+  spec.name          = "drudge"
+  spec.version       = Drudge::VERSION
   spec.authors       = ["Ognen Ivanovski"]
   spec.email         = ["ognen.ivanovski@me.com"]
   spec.description   = %q{TODO: Write a gem description}

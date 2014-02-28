@@ -6,9 +6,9 @@ Feature: Optional Arguments
   Scenario: Optonal argument at the end of the arg list
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "Greets people"
       def greet(message, from = "Santa")
@@ -25,9 +25,9 @@ Feature: Optional Arguments
   Scenario: Optional arguments in the middle of the arg list
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "Greets people"
       def greet(message, from = "Santa", recipient)
@@ -45,9 +45,9 @@ Feature: Optional Arguments
   Scenario: Providing value for an optional arguemnt overrides the default
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "Greets people"
       def greet(message, from = "Santa", recipient)

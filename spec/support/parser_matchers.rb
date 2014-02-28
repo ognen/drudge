@@ -1,10 +1,10 @@
-require 'hoister/cli/parsers/tokenizer'
+require 'drudge/parsers/tokenizer'
 
 RSpec::Matchers.define :parse do |input|
   match do |parser|
     res = parser.call(input) 
 
-    Hoister::Cli::Parsers::ParseResults::Success === res and
+    res.success? and
       res.remaining != input and
       (res.result == @expected_output or not @expected_output)
   end
@@ -22,14 +22,14 @@ RSpec::Matchers.define :tokenize_and_parse do |input|
   match do |parser|
     res = do_parse(parser, input)
 
-    is_success?(res) and
+    res.success? and
       (res.result == @expected_output or not @expected_output)
   end
 
   failure_message_for_should do |parser|
     res = do_parse(parser, input)
 
-    if @expected_output and is_success?(res)
+    if @expected_output and res.success?
       "expected that \"#{parser}\"'s result would be #{@expected_output}, was '#{res.result}'"
     else
       "expected that #{parser} should tokenize and parse '#{input}'"
@@ -37,10 +37,6 @@ RSpec::Matchers.define :tokenize_and_parse do |input|
   end
 
   def do_parse(parser, input)
-    parser.call(Hoister::Cli::Parsers::Tokenizer.tokenize(input))
-  end
-
-  def is_success?(result)
-    Hoister::Cli::Parsers::ParseResults::Success === result
+    parser.call(Drudge::Parsers::Tokenizer.tokenize(input))
   end
 end

@@ -1,13 +1,13 @@
-require 'hoister/cli/command'
+require 'drudge/command'
 
 def dummy_cmd(name, args = [])
-  Hoister::Cli::Command.new(name, args, -> { puts name } )
+  Drudge::Command.new(name, args, -> { puts name } )
 end
 
 def splash_param(name)
-  Hoister::Cli::Param.any(name, splatt: true)
+  Drudge::Param.any(name, splatt: true)
 end
 
 def optional_param(name)
-  Hoister::Cli::Param.any(name, optional: true)
+  Drudge::Param.any(name, optional: true)
 end

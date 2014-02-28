@@ -7,9 +7,9 @@ Feature: Simple Commands
   Scenario: A simple command with no arguments is just a method call 
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "verifies the project"
       def verify
@@ -27,9 +27,9 @@ Feature: Simple Commands
   Scenario: A method with an argument maps to a command in a Ruby script with one required argument
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
     
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "greets someone"
       def greet(someone)
@@ -45,9 +45,9 @@ Feature: Simple Commands
   Scenario: Too many arguments are reported as an error
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "greet someone someoneelse"
       def greet(someone)
@@ -69,9 +69,9 @@ Feature: Simple Commands
   Scenario: A required parameter must be provided
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "greets someone"
       def greet(someone)
@@ -93,9 +93,9 @@ Feature: Simple Commands
   Scenario: The user is notified if a command is improperly entered
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "greets someone"
       def greet(someone)
@@ -123,9 +123,9 @@ Feature: Simple Commands
   Scenario: The error reported relates to the command being executed
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "greets someone"
       def greet(someone)

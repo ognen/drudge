@@ -5,9 +5,9 @@ Feature: Splatt Arguments
 Scenario Outline: Splatt arguments at the end of the command
   Given a Ruby script called "cli" with:
   """
-  require 'hoister/cli'
+  require 'drudge'
 
-  class Cli < Hoister::Cli
+  class Cli < Drudge
 
     desc "Greets people"
     def greet(from, *messages)
@@ -32,9 +32,9 @@ Scenario Outline: Splatt arguments at the end of the command
   Scenario Outline: Splatt arguments in the middle of the command
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "Greets people"
       def greet(from, *messages, to)
@@ -58,9 +58,9 @@ Scenario Outline: Splatt arguments at the end of the command
   Scenario Outline: Splatt arguments at the beginning of the ocmmand
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "Greets people"
       def greet(*greeters, message, to)
@@ -85,9 +85,9 @@ Scenario Outline: Splatt arguments at the end of the command
   Scenario Outline: Splatt arguments combined with optional arguments
     Given a Ruby script called "cli" with:
     """
-    require 'hoister/cli'
+    require 'drudge'
 
-    class Cli < Hoister::Cli
+    class Cli < Drudge
 
       desc "Greets people"
       def greet(from, first_message = 'Hi', *messages,  to)
