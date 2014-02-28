@@ -8,9 +8,12 @@ Gem::Specification.new do |spec|
   spec.version       = Drudge::VERSION
   spec.authors       = ["Ognen Ivanovski"]
   spec.email         = ["ognen.ivanovski@me.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
-  spec.homepage      = ""
+  spec.description   = %q{A library for building command-line
+                          automation tools with the aim of transferring you (conceptionally) from the command line
+                          interface into Ruby and then letting you use build your tool in a familiar
+                          environement.}
+  spec.summary       = %q{A gem that enables you to write command line automation tools using Ruby 2.0.}
+  spec.homepage      = "https://github.com/ognen/drudge"
   spec.license       = "MIT"
 
   spec.required_ruby_version = '>= 2.0.0'
