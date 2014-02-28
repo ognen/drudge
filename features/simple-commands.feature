@@ -120,6 +120,36 @@ Feature: Simple Commands
             ~~~~~
     """
 
+  Scenario: The user is notified if a command is missing
+    Given a Ruby script called "cli" with:
+    """
+    require 'drudge'
+
+    class Cli < Drudge
+
+      desc "greets someone"
+      def greet(someone)
+        puts "Hello #{someone}!"
+      end
+
+      desc "says something"
+      def say(something)
+        puts "Saying #{something}!"
+      end
+
+    end
+
+    Cli.dispatch
+    """
+    When I run `cli`
+    Then the output should contain:
+    """
+    error: expected a command:
+
+        cli
+            ^
+    """
+
   Scenario: The error reported relates to the command being executed
     Given a Ruby script called "cli" with:
     """

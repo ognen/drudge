@@ -10,16 +10,16 @@ class Drudge
     # returns a parser that matches a :val on the input
     # +expected+ is compared to the input using === (i.e. you can use it as a matcher for
     # all sorts of things)
-    def value(expected = /.*/)
-      accept(end_of_input_message: :eoi_tag) { |kind, value|  kind == :val && expected === value }
-             .mapv                           { |_, value| value }
-             .with_failure_message           do |msg, ((_, value), *_)| 
-                                               case msg
-                                               when :eoi_tag then "expected a value"
-                                               else "'#{value}' doesn't match #{expected}"
-                                               end
-                                             end
-             .describe expected.to_s
+    def value(expected = /.*/, 
+              eos_failure_msg: "expected a value", 
+              failure_msg:     -> ((_, value)) { "'#{value}' doesn't match #{expected}" })
+
+      accept(-> ((kind, value)) { kind == :val && expected === value },
+               eos_failure_msg: eos_failure_msg,
+               failure_msg: failure_msg )
+        .mapv { |_, value| value }
+        .describe expected.to_s
+
     end
 
     # matches the end of the stream
@@ -36,11 +36,11 @@ class Drudge
 
     # parses a command
     def command(name)
-      value(name.to_s).mapv                 { |v| [:arg, v] }
-                      .with_failure_message { |msg, ((_, val), *_)| "unknown command '#{val}'" }
-                      .describe(name.to_s)
+      value(name.to_s, eos_failure_msg: "expected a command",
+                       failure_msg: -> ((_, val)) { "unknown command '#{val}'" })
+        .mapv { |v| [:arg, v] }
+        .describe(name.to_s)
     end
-
 
     def parser_mixin
       ArgumentParser

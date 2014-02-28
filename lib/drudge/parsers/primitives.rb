@@ -20,19 +20,32 @@ class Drudge
       #  accept(2) -> will accept 2
       #  accept(-> v { v / 2 == 4 }) will use the lambda to check the value
       #  accept { |v| v / 2 == 4 } is also possible
-      def accept(expected = nil, end_of_input_message: "expected a #{expected}", &expected_block)
+      def accept(expected = nil, 
+                 eos_failure_msg: "expected a #{expected}", 
+                 failure_msg: -> value { "'#{value}' doesn't match #{expected}" },
+                  &expected_block)
+
         expected = expected_block if expected_block
+
+        to_message = -> (value, msg) do 
+          case msg
+          when String
+            msg
+          when Proc
+            msg[value]
+          end
+        end
 
         parser do |input|
           value, *rest = input
 
           case 
           when input.nil? || input.empty?
-            Failure(end_of_input_message, input)
+            Failure(to_message[value, eos_failure_msg], input)
           when expected === value
             Success(Single(value), rest)
           else
-            Failure("'#{value}' doesn't match #{expected}", input)
+            Failure(to_message[value, failure_msg], input)
           end
         end
       end
