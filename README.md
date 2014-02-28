@@ -38,7 +38,6 @@ error: expected a command:
   cli
       ^
 
-
 $ ./cli great Santa Joe
 error: unknown command 'great':
 
@@ -60,18 +59,18 @@ error: expected a value for <to>:
 
 ## Approach
 
-The philosphy of **Drudge** is to provide a very thin layer over *glue* over normal
+The philosphy of **Drudge** is to provide a very thin layer over normal
 Ruby constructs such as classes and methods that exposes them via a command
 line interface. 
 
 This layer interprets the command line instruction and invokes the identifed
 ruby method using a **very simple** resolution method. From then on, it's just
-normal Ruby! No special life-cycles etc.
+normal Ruby! No special life-cycles, etc.
 
 Even though this layer is simple, it is built to produce excellent error
 messages on wrong command line input.
 
-Drudge is built for Ruby 2.0 with keyword arguments in mind.
+Drudge is built for Ruby 2 with keyword arguments in mind.
 
 ## Why not Thor?
 
