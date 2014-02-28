@@ -12,41 +12,32 @@ module Hoister
       # +expected+ is compared to the input using === (i.e. you can use it as a matcher for
       # all sorts of things)
       def value(expected = /.*/)
-        parser do |input|
-          (kind, value), *rest = input
-
-          case 
-          when input.nil? || input.empty?
-            Failure("expected a value", input)
-          when kind == :val && expected === value
-            Success(Single(value), rest)
-          else
-            Failure("'#{value}' doesn't match #{expected}", input)
-          end
-        end.describe expected.to_s
+        accept(end_of_input_message: :eoi_tag) { |kind, value|  kind == :val && expected === value }
+               .map_in_parse_value     { |_, value| value }
+               .with_failure_message  do |msg, ((_, value), *_)| 
+                                        case msg
+                                        when :eoi_tag then "expected a value"
+                                        else "'#{value}' doesn't match #{expected}"
+                                        end
+                                      end
+               .describe expected.to_s
       end
 
       # matches the end of the stream
       def eos(message = "Expected end-of-command")
-        parser do |input|
-          if input.empty?
-            Success(Empty(), [])
-          else
-            Failure(message, input)
-          end
-        end.describe ""
+        super
       end
 
       # parses a single argument with the provided name
       def arg(name, expected = value(/.*/))
-        expected.map { |a| [:arg, a] }
+        expected.map_in_parse_value   { |a| [:arg, a] }
                 .with_failure_message { |msg| "#{msg} for <#{name}>" }
                 .describe "<#{name}>"
       end
 
       # parses a command
       def command(name)
-        value(name.to_s).map { |v| [:arg, v] }
+        value(name.to_s).map_in_parse_value   { |v| [:arg, v] }
                         .with_failure_message { |msg, ((_, val), *_)| "unknown command '#{val}'" }
                         .describe(name.to_s)
       end
@@ -81,7 +72,7 @@ module Hoister
 
         # a parser that collates the results of argument parsing
         def collated_arguments
-          self.map_parse_value do |results|
+          self.map_in_parse_result do |results|
             args = results.to_a.reduce({args: []}) do |a, (kind, value, *rest)|
               case kind
               when :arg

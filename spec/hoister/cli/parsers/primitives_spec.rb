@@ -75,9 +75,9 @@ module Hoister
 
         describe "parser combinators" do
 
-          describe ".map" do
+          describe ".mapv" do
             context "applied on a value('something') parser" do
-              subject { value('something').map { |r| { args: [r] } } }
+              subject { value('something').mapv { |r| { args: [r] } } }
 
               it { should parse([[:val, "something"]]).as({ args: ['something']}) } 
               it { should_not parse([[:val, "something else"]]) }

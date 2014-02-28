@@ -37,32 +37,56 @@ module Hoister
 
         # Identifies a parse result. It can be a Success or NotSuccess
         module ParseResult
-          # applies the provided block to the containing value
-          # ParseValue and 
-          # returns a new Parse result containing the modified value
+          # applies the provided block to the containing ParseValue
+          # returns a new ParseResult containing the modified value
           def map ; end
 
           # applies the provied block to the contained parse value
-          def map_parse_value; end
+          def map_in_parse_value; end
 
-          # monadic bind of two sequential results
-          def bind; end 
+          # monadic bind (or flat_map) of two sequential results
+          def flat_map; end 
+
+          def flat_map_with_next(&parser_producer); end
+
+          # Combines this result with the other by applying the '+' operator
+          # on the underlying ParseValue
+          # takes care of failure / success combinatorics  are observed
+          def +(other)
+            self.flat_map do |res|
+              other.map do |other_res|
+                res + other_res
+              end
+            end
+          end
+
+          # returns true if the ParseResult was successful 
+          def success?; end
         end
 
         # A successful parse result. Contains a ParseValue as 
         # the parse_result attr.
         Success = Struct.new(:parse_result, :remaining) do
+          include ParseResult
 
-          def map_parse_value
+          def map
             self.class.new(yield(parse_result), remaining)
           end
 
-          def map(&f)
+          def map_in_parse_value(&f)
             self.class.new(parse_result.map(&f), remaining)
           end
 
-          def bind
-            yield parse_result, remaining
+          def flat_map
+            yield parse_result
+          end
+
+          def flat_map_with_next(&next_parser_producer)
+            next_parser_producer[self][remaining]
+          end
+
+          def success?
+            true
           end
 
           def empty?
@@ -88,13 +112,21 @@ module Hoister
             self
           end
 
-          def map_parse_value
+          def map_in_parse_value
             self
           end
 
           # propagate error
-          def bind
+          def flat_map
             self
+          end
+
+          def flat_map_with_next(&_)
+            self
+          end
+
+          def success?
+            false
           end
 
         end
@@ -136,6 +168,10 @@ module Hoister
             self
           end
 
+          def flat_map
+            self
+          end
+
           def +(other)
             other
           end
@@ -156,6 +192,10 @@ module Hoister
 
           def map
             self.class.new(yield value)
+          end
+
+          def flat_map
+            yield value
           end
 
           def +(other)
@@ -184,6 +224,10 @@ module Hoister
 
           def map
             self.class.new(yield value)
+          end
+
+          def flat_map
+            yield value
           end
 
           def +(other)

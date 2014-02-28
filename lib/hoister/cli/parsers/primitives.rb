@@ -15,6 +15,45 @@ module Hoister
           prs
         end
 
+        # produces a parser that expects the +expected+ value
+        # +expected+ can is checked using '===' so 
+        #  accept(String) -> will accept any string
+        #  accept(2) -> will accept 2
+        #  accept(-> v { v / 2 == 4 }) will use the lambda to check the value
+        #  accept { |v| v / 2 == 4 } is also possible
+        def accept(expected = nil, end_of_input_message: "expected a #{expected}", &expected_block)
+          expected = expected_block if expected_block
+
+          parser do |input|
+            value, *rest = input
+
+            case 
+            when input.nil? || input.empty?
+              Failure(end_of_input_message, input)
+            when expected === value
+              Success(Single(value), rest)
+            else
+              Failure("'#{value}' doesn't match #{expected}", input)
+            end
+          end
+        end
+
+        # returns a parser that always succeeds with the provided ParseValue
+        def success(parse_value)
+          parser { |input| Success(parse_value, input) }.describe "SUCC: #{parse_value}"
+        end
+
+       # matches the end of the stream
+       def eos(message)
+        parser do |input|
+          if input.empty?
+            Success(Empty(), [])
+          else
+            Failure(message, input)
+          end
+        end.describe ""
+      end        
+
         # Commits the provided parser. If +prs+ returns
         # a +Failure+, it will be converted into an +Error+ that 
         # will stop backtracking inside a '|' operator
@@ -30,12 +69,6 @@ module Hoister
             end
           end.describe(prs.to_s)
         end
-
-        # returns a parser that always succeeds with the provided ParseValue
-        def success(parse_value)
-          parser { |input| Success(parse_value, input) }
-        end
-
 
         # Returns the module which is to be mixed in in every
         # constructed parser. Can be overriden to mix in 
@@ -53,19 +86,32 @@ module Hoister
           # Returns a new parser that applies the parser function to the 
           # parse result of self
           def map(&f)
-            parser { |input| self[input].map &f }.describe(self.to_s)
+            parser { |input| f[self[input]] }.describe(self.to_s)
           end
 
           # like map but yields the ParseValue instead of the actuall 
           # wrapped value. Usefull if you want to know if the result was 
           # a sequence or not
-          def map_parse_value(&f)
-            parser { |input| self[input].map_parse_value &f }.describe(self.to_s)
+          def map_in_parse_value(&f)
+            parser { |input| self[input].map { |pr| pr.map &f } }.describe(self.to_s)
           end
 
-          # likemap but yields the ParseResult instead of the vrapped value
-          def map_parse_result(&f)
-            parser { |input| f[self[input]] }.describe(self.to_s)
+          alias_method :mapv, :map_in_parse_value
+
+          # likemap but yields the the contents of the ParseResult instead of the vrapped value
+          def map_in_parse_result(&f)
+            parser { |input| self[input].map &f }.describe(self.to_s)
+          end
+
+          alias_method :mapr, :map_in_parse_result
+
+          # monadic bind (or flat map) for a parser
+          # f should take the result of the current parser and return a the parser that will consume
+          # the next input. Used for sequencing
+          def flat_map(&f)
+            parser do |input|
+              self[input].flat_map_with_next &f
+            end
           end
 
           # Returns a parser that, if self is successful will dicard its result
@@ -86,13 +132,9 @@ module Hoister
           # follwing by the otheer parser on the remaining input
           # returns a Tuple of both results
           def >(other)
-            parser do |input|
-              result1 = self[input].bind do |result1, remaining1|
-                other[remaining1].bind do |result2, remaining2|
-
-                  Success(result1 + result2, remaining2)
-
-                end
+            self.flat_map do |result1|
+              other.map do |result2|
+                result1 + result2
               end
             end.describe("#{self.to_s} #{other.to_s}")
           end
@@ -135,7 +177,7 @@ module Hoister
 
           # makes this parser opitonal
           def optional
-            self.map_parse_result do |parse_result|
+            self.map do |parse_result|
               case parse_result
               when Success
                 parse_result
