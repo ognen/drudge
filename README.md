@@ -40,4 +40,9 @@ automation tools with the aim of transferring you (conceptionally) from the comm
 interface into Ruby and then letting you use build your tool in a familiar
 environement.
 
+## License
+
+Released under the MIT License.  See the [LICENSE][] file for further details.
+
+[license]: LICENSE.txt
 
