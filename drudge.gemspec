@@ -27,5 +27,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "cucumber"
   spec.add_development_dependency "aruba", ">= 0.4.6"
   spec.add_development_dependency "yard", ">= 0.8.6.1"
+  spec.add_development_dependency "gem-release" 
 
 end
