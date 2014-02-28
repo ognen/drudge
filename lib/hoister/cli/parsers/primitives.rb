@@ -89,7 +89,8 @@ module Hoister
             parser { |input| f[self[input]] }.describe(self.to_s)
           end
 
-          # like map but yields the ParseValue instead of the actuall 
+          # like map but yields the actual value of the parse result 
+          # (ParseResult contains ParseValue which contains the actual value)
           # wrapped value. Usefull if you want to know if the result was 
           # a sequence or not
           def map_in_parse_value(&f)

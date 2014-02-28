@@ -96,7 +96,7 @@ module Hoister
             case kind
             when :req then Param.any(name)
             when :opt then Param.any(name, optional: true)
-            when :rest then Param.any(name, splash: true)
+            when :rest then Param.any(name, splatt: true)
             else raise "Unsupported parameter type"
             end
           end

@@ -5,7 +5,7 @@ def dummy_cmd(name, args = [])
 end
 
 def splash_param(name)
-  Hoister::Cli::Param.any(name, splash: true)
+  Hoister::Cli::Param.any(name, splatt: true)
 end
 
 def optional_param(name)

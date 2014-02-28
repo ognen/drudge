@@ -47,10 +47,10 @@ module Hoister
         parser = params.reverse.reduce(end_of_args) do |rest, param|
           p = param.argument_parser
 
-          if param.optional?
-            ((p > rest) | rest).describe("[#{p}] #{rest}")
-          else
-            p > rest
+          case
+          when param.optional? then ((p > rest) | rest).describe("[#{p}] #{rest}")
+          when param.splatt? then (p.repeats(till: rest) > rest).describe("[#{p} ...] #{rest}")
+          else p > rest
           end
         end
       end
@@ -72,14 +72,14 @@ module Hoister
       attr_reader :optional
       alias_method :optional?, :optional
 
-      attr_reader :splash
-      alias_method :splash?, :splash
+      attr_reader :splatt
+      alias_method :splatt?, :splatt
       
-      def initialize(name, type, optional: false, splash: false)
+      def initialize(name, type, optional: false, splatt: false)
         @name = name.to_sym
         @type = type.to_sym
         @optional = !! optional 
-        @splash = !! splash
+        @splatt = !! splatt
       end
 
       # returns a parser that is able to parse arguments
