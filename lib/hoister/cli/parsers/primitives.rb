@@ -187,36 +187,55 @@ module Hoister
             end.describe("[#{self.to_s}]")
           end
 
+          # creates a parser that will reject a whatever this parser succeeds in parsing
+          # if this parser fails, the 'rejected' version will succeed with Empty() nad 
+          # will not consume any input
+          def reject
+            parser do |input|
+              result = self[input]
+
+              if result.success?
+                Failure("Unexpected #{self.to_s}", result.remaining)
+              else
+                Success(Empty(), input)
+              end
+            end.describe("!#{self.to_s}")
+          end
+
           # returns a parser that repeatedly parses 
           # with +self+ until it fails
-          def repeats(kind = :*)
+          def repeats(kind = :*, till: self.reject | eos("eos"))
+
             case kind
-            when :* then rep1 | success(Empty())
-            when :+ then rep1
+            when :* then (rep1(till: till) | success(Empty())).describe("[#{self} ...]")
+            when :+ then rep1(till: till).describe( "#{self} [#{self} ...]")
             else raise "Unknown repetition kind for #{self}"
             end
           end
 
-          def rep1
+
+          def rep1(till: self.reject)
             parser do |input|
-              current = result = self[input]
+              results = self[input]
+              remaining = results.remaining
 
-              while Success === current do
-                current = self[current.remaining]
-
-                if Success === current
-                  result = Success(result.parse_result + current.parse_result, current.remaining)
+              if results.success?
+                while results.success? && !till[remaining].success?
+                  results += self[remaining]
+                  remaining = results.remaining
                 end
-
               end
 
-              result
+              till_result = till[remaining]
+              if till_result.success?
+                results
+              else
+                till_result
+              end
             end
           end
+
           private :rep1
-
-
-
 
           # attach a description to the parser
           def describe(str)

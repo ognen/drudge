@@ -169,29 +169,22 @@ module Hoister
             end
 
             context "zero or more repetitions" do
-
-              describe "without followed_by" do
-
-                shared_examples "parser for zero or more repetitions" do |word|
-                  it { should tokenize_and_parse(["not-#{word}"]).as(nil) }
-                  it { should tokenize_and_parse([]).as(nil) }
-                end
-
-                describe "no arguments means repeats(:*)" do
-                  subject { value('hi').repeats }
-                  it_behaves_like "repetitive parser", 'hi'
-                  it_behaves_like  "parser for zero or more repetitions" , 'hi'
-                end
-
-                describe "repeats(:*)" do
-                  subject { value('hi').repeats(:*) }
-
-                  it_behaves_like "repetitive parser", 'hi'
-                  it_behaves_like  "parser for zero or more repetitions" , 'hi'
-                end
+              shared_examples "parser for zero or more repetitions" do |word|
+                it { should tokenize_and_parse(["not-#{word}"]).as(nil) }
+                it { should tokenize_and_parse([]).as(nil) }
               end
 
-              describe "with followed_by" do
+              describe "no arguments means repeats(:*)" do
+                subject { value('hi').repeats }
+                it_behaves_like "repetitive parser", 'hi'
+                it_behaves_like  "parser for zero or more repetitions" , 'hi'
+              end
+
+              describe "repeats(:*)" do
+                subject { value('hi').repeats(:*) }
+
+                it_behaves_like "repetitive parser", 'hi'
+                it_behaves_like  "parser for zero or more repetitions" , 'hi'
               end
             end
 
@@ -203,6 +196,62 @@ module Hoister
 
                 it { should_not tokenize_and_parse(["not-hi"]) }
                 it { should_not tokenize_and_parse([]) }
+              end
+            end
+
+            context "with till:" do 
+              shared_examples "terminated repeating parser" do |word, terminal|
+                it { should tokenize_and_parse([word, terminal]).as(word) }
+                it { should tokenize_and_parse([word, word, terminal]).as([word, word]) }
+                it { should tokenize_and_parse([word, word, terminal, word]).as([word, word]) }
+
+              end
+
+
+              describe "value('hi').repeats(till: value('no'))" do
+                subject { value('hi').repeats(till: value('no')) }
+
+                it_behaves_like "terminated repeating parser", "hi", "no"
+
+                it { should tokenize_and_parse(%w[no]).as(nil) }
+              end
+
+              describe "value('hi').repeats(:+, till: value('no')" do
+                subject { value('hi').repeats(:+, till: value('no')) }
+
+                it_behaves_like "terminated repeating parser", "hi", "no"
+
+                it { should_not tokenize_and_parse(%w[no]) }
+
+                it { should_not tokenize_and_parse(%w[hi hi]) }
+                it { should_not tokenize_and_parse([]) }
+
+              end
+
+              describe "terminated repeating parser is non-greedy" do
+                shared_examples "non-greedy terminated repeating parser" do |word, terminal_sequence|
+                  it { should tokenize_and_parse([word, *terminal_sequence]).as(word) }
+                  it { should tokenize_and_parse([word, *terminal_sequence, *terminal_sequence]).as(word) }
+                end
+
+                describe "value('hi').repeats(till: value('hi') > value('no'))" do
+                  subject { value('hi').repeats(till: (value('hi') > value('no'))) }
+
+                  it_behaves_like "non-greedy terminated repeating parser", 'hi', ['hi', 'no']
+
+                  it { should tokenize_and_parse(%w[hi hi]).as(nil) }
+                  it { should tokenize_and_parse(%w[hi]).as(nil) }
+                end
+
+                describe "value('hi').repeats(:+, till: value('hi') > value('no'))" do
+                  subject { value('hi').repeats(:+, till: (value('hi') > value('no'))) }
+
+                  it_behaves_like "non-greedy terminated repeating parser", 'hi', ['hi', 'no']
+
+                  it { should_not tokenize_and_parse(%w[hi hi]) }
+                  it { should_not tokenize_and_parse(%w[hi]) }
+                end
+
 
               end
             end
