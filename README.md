@@ -68,6 +68,9 @@ This layer interprets the command line instruction and invokes the identifed
 ruby method using a **very simple** resolution method. From then on, it's just
 normal Ruby! No special life-cycles etc.
 
+Even though this layer is simple, it is built to produce excellent error
+messages on wrong command line input.
+
 Drudge is built for Ruby 2.0 with keyword arguments in mind.
 
 ## Why not Thor?
