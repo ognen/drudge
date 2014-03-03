@@ -30,12 +30,20 @@ class Drudge
       # given an array of sexps (as returned by tokenize) produce 
       # a string representatio of that
       def untokenize(sexps)
-        sexps.map do |type, arg, *_|
+        spc = -> needs_space { needs_space ? " " : "" }
+
+        sexps.reduce([false, ""]) do |(needs_space, aggregate), (type, arg, *)|
           case type
           when :val
-            arg
+            [true, aggregate + spc[needs_space] + arg]
+          when :'!--'
+            [true, aggregate + spc[needs_space] + '--']
+          when :'--'
+            [true, aggregate + spc[needs_space] + '--' + arg]
+          when :'='
+            [false, aggregate + "="]
           end
-        end.join(" ")
+        end[1]
       end
 
       # produces a string that underlines a specific token 

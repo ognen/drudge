@@ -53,12 +53,17 @@ class Drudge
       end
 
       describe ".untokenize" do
-        let(:sexps) { [[:val, 'hello', {loc: [0, 0, 5]}],
-                       [:val, 'dear', {loc: [1, 0, 4]}],
-                       [:val, 'world', {loc: [2, 0, 5]}]] }
+        let(:sexps) { [[:'--', 'keyword', {loc: [0, 0, 9]}],
+                       [:'--', 'keyword2', {loc: [1, 0, 10]}],
+                       [:'=', {loc: [1, 10, 1]}],
+                       [:val, 'value', {loc: [1, 11, 5]}],
+                       [:'!--', {loc: [2, 0, 2]}],
+                       [:val, 'hello', {loc: [3, 0, 5]}],
+                       [:val, 'dear', {loc: [4, 0, 4]}],
+                       [:val, 'world', {loc: [5, 0, 5]}]] }
 
         it "converts an array of s-exps into a string" do
-          expect(Tokenizer.untokenize(sexps)).to eq "hello dear world"
+          expect(Tokenizer.untokenize(sexps)).to eq "--keyword --keyword2=value -- hello dear world"
         end
       end
 
