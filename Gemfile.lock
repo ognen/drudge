@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    drudge (0.3.0)
+    drudge (0.4.0)
 
 GEM
   remote: https://rubygems.org/
