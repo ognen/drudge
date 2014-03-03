@@ -9,8 +9,21 @@ class Drudge
       # the sexps are then suitable for the Drudge::parsers parser 
       # combinators
       def tokenize(argv)
-        argv.map.with_index do |arg, index|
-          [:val, arg, loc(index, arg.length)]
+        argv.flat_map.with_index do |arg, index|
+          case arg
+          when /^--$/ 
+            [[:"!--", loc(index, arg.length)]]
+          when /^--([^=]+)$/
+            [[:"--", $1, loc(index, arg.length)]]
+          when /^--([^=]+)=(.*)$/
+            keyword = $1
+            value   = $2
+            [[:"--", $1, loc(index, keyword.length + 2)],
+             [:"=", loc(index, keyword.length + 2, 1)],
+             [:val, value, loc(index, keyword.length + 3, value.length)]]
+           else
+            [[:val, arg, loc(index, arg.length)]]
+          end
         end
       end
 

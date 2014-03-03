@@ -26,6 +26,30 @@ class Drudge
           expect(tokens).to eq [[:val, 'hello', {loc: [0, 0, 5]}],
                                 [:val, 'world', {loc: [1, 0, 5]}]]
         end
+
+        it "converts a keyword argument into the sexp [:--, 'arg']" do 
+          tokens = Tokenizer.tokenize(%w[hello --arg])
+
+          expect(tokens).to eq [[:val, 'hello', {loc: [0, 0, 5]}],
+                                [:"--", 'arg', {loc: [1, 0, 5]}]]
+        end
+
+        it "converts a '--keyword=value' argument into [[:--, 'keyword'], [:=], [:val, 'value']" do
+          tokens = Tokenizer.tokenize(%w[hello --keyword=value])
+          
+          expect(tokens).to eq [[:val, 'hello', {loc: [0, 0, 5]}],
+                                [:'--', 'keyword', {loc: [1, 0, 9]}],
+                                [:'=', {loc: [1, 9, 1]}],
+                                [:val, 'value', {loc: [1, 10, 5]}]]
+        end
+
+        it "converts the '--' argument into [:!--] " do
+          tokens = Tokenizer.tokenize(%w[hello --])
+
+          expect(tokens).to eq [[:val, 'hello', {loc: [0, 0, 5]}],
+                                [:"!--", {loc: [1, 0, 2]}]]
+        end
+
       end
 
       describe ".untokenize" do
