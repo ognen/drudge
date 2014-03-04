@@ -51,6 +51,27 @@ class Drudge
       end
     end
 
+    describe "a command with a a parameter and a keword parameter" do
+      subject do
+        Command.new(:greet,
+                    [ Param.any(:message),
+                      KeywordParam.any(:from) ],
+                    -> (message, from: "someone") { puts "#{from} says #{message}"})
+      end
+
+      it "accepts a keyword argument" do
+        expect_capture { subject.dispatch("Hello", from: "Santa") }.to eq("Santa says Hello\n")
+      end
+
+      it "uses the default value for the keyword parameter if the argument is not supplied" do
+        expect_capture { subject.dispatch("Hello") }.to eq("someone says Hello\n")
+      end
+
+      it "doesn't accept other keyword arguments" do
+        expect { subject.dispatch("Hello", to: "Santa") }.to raise_error
+      end
+    end
+
     describe "The command's description" do
       subject do
         Command.new(:verify, -> { puts "Verified." }, desc: "Verification")

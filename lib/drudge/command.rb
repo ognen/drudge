@@ -17,6 +17,9 @@ class Drudge
     # The list of parameters
     attr_reader :params
 
+    # A hash of the keyword parameters
+    attr_reader :keyword_params
+
     # The command's body
     attr_reader :body
 
@@ -25,11 +28,13 @@ class Drudge
 
     # Initializes a new command
     def initialize(name, params = [], body, desc: "")
-      @name   = name.to_sym
-      @params = params
-      @body   = body
+      @name           = name.to_sym
 
-      @desc   = desc
+      @params         = params.select { |p| Param === p }
+      @keyword_params = Hash[params.select { |p| KeywordParam === p }
+                                   .map    { |p| [p.name, p] }]
+      @body           = body
+      @desc           = desc
     end
 
     # runs the command 
@@ -56,8 +61,7 @@ class Drudge
 
   end
 
-  # Represents a command parameter
-  class Param
+  class AbstractParam
     include Parsers
 
     TYPES = %i[any string]
@@ -68,23 +72,10 @@ class Drudge
     # the  argument's type
     attr_reader :type
 
-    attr_reader :optional
-    alias_method :optional?, :optional
-
-    attr_reader :splatt
-    alias_method :splatt?, :splatt
-    
-    def initialize(name, type, optional: false, splatt: false)
+    # initializes the param 
+    def initialize(name, type)
       @name = name.to_sym
       @type = type.to_sym
-      @optional = !! optional 
-      @splatt = !! splatt
-    end
-
-    # returns a parser that is able to parse arguments
-    # fitting this parameter
-    def argument_parser
-      arg(name, value(/.+/))
     end
 
     # factory methods for every type of parameter
@@ -96,5 +87,33 @@ class Drudge
       end
     end
   end
+
+  # Represents a command parameter
+  class Param < AbstractParam
+
+    attr_reader :optional
+    alias_method :optional?, :optional
+
+    attr_reader :splatt
+    alias_method :splatt?, :splatt
+    
+    def initialize(name, type, optional: false, splatt: false)
+      super(name, type)
+
+      @optional = !! optional 
+      @splatt = !! splatt
+    end
+
+    # returns a parser that is able to parse arguments
+    # fitting this parameter
+    def argument_parser
+      arg(name, value(/.+/))
+    end
+  end
+
+  # represents a keyword parameter
+  class KeywordParam < AbstractParam
+  end
+
 
 end
