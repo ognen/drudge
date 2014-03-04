@@ -130,15 +130,7 @@ class Drudge
         # Returns a parser that, if self is successful will dicard its result
         # Used in combination with sequencing to achieve lookahead / lookbehind
         def discard
-          parser do |input|
-            result = self[input]
-
-            if Success === result
-              Success(Empty(), result.remaining)
-            else
-              result
-            end
-          end.describe(self.to_s)
+          self.mapr { |_| Empty() }.describe(self.to_s)
         end
 
         # sequening: returns a parser that succeeds if self succeeds,
