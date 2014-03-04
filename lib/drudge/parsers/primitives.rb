@@ -261,6 +261,8 @@ class Drudge
               result
             when Failure
               Failure(failure_converter[result.message, input], result.remaining)
+            when Error
+              Error(failure_converter[result.message, input], result.remaining)
             end
           end.describe self.to_s
         end
