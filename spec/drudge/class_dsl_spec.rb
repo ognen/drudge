@@ -44,8 +44,17 @@ class Drudge
       puts "From overriden."
       super
     end
-
   end
+
+  class SampleWithKeywordArg
+    include ClassDSL
+
+    desc "with keyword arg"
+    def greet(message, from: "Sender")
+      puts "From #{from}: message"
+    end
+  end
+
 
   describe ClassDSL do
 
@@ -119,6 +128,20 @@ class Drudge
         end
       end
 
+    end
+
+    describe "keyword parameters " do
+      context "A Kit from a class with a command that has a keyword parameter 'from'"  do
+        subject(:kit) { SampleWithKeywordArg.new.to_kit(:cli) }
+
+        describe "the command 'greet'" do
+          subject(:command) { kit[:greet] }
+
+          it "should contain the keyword param 'from'" do
+            expect(command.keyword_params).to include(:from)
+          end
+        end
+      end
     end
   end
   

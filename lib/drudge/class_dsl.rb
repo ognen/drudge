@@ -96,6 +96,7 @@ class Drudge
           when :req then Param.any(name)
           when :opt then Param.any(name, optional: true)
           when :rest then Param.any(name, splatt: true)
+          when :key then KeywordParam.any(name)
           else raise "Unsupported parameter type"
           end
         end
