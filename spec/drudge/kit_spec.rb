@@ -30,6 +30,21 @@ class Drudge
           expect { subject.dispatch "hello", "dear", "sir" }.to raise_error(CommandArgumentError)
         end
 
+        describe ".[]" do 
+          it "returns the command identified by the specified symbol" do
+            expect(kit[:hello].name).to eq(:hello)
+            expect(kit[:goodbye].name).to eq(:goodbye)
+          end
+
+          it "returns nil if the command does not exist" do 
+            expect(kit[:something_else]).to be_nil
+          end
+
+          it "recognizes strings as command names as well" do
+            expect(kit["hello"].name).to eq(:hello)
+          end
+        end
+
         describe "#argument_parser" do
           subject { kit.argument_parser }
 

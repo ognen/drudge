@@ -19,6 +19,11 @@ class Drudge
       @name, @commands = name.to_sym, commands
     end
 
+    # returns the command by the given name
+    def [](command_name)
+      find_command(command_name)
+    end
+
     # Dispatches a command within the kit
     # The first argument is the command name
     def dispatch(command_name, *args)
