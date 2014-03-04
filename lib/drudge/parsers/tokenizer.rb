@@ -28,7 +28,7 @@ class Drudge
       end
 
       # given an array of sexps (as returned by tokenize) produce 
-      # a string representatio of that
+      # a string representation of that
       def untokenize(sexps)
         spc = -> needs_space { needs_space ? " " : "" }
 
@@ -52,7 +52,7 @@ class Drudge
         line                 = untokenize(input)
 
         if token
-          _, _, meta         = token
+          *, meta            = token
           location           = meta[:loc]
           _, _, token_length = location
           white_space        = index_of_sexp_in_untokenized(input, location)
@@ -73,17 +73,15 @@ class Drudge
       end
 
       def index_of_sexp_in_untokenized(input, loc)
-        l_index, l_start, l_len = loc
+        prior_locs = input.map { |*, meta| meta[:loc] }.take_while { |l| l != loc }
 
-        prefix =
-        if l_index == 0 
-          0
-        else 
-          input[0..l_index - 1].map       { |_, _, meta|       meta[:loc]    }
-          .reduce(0) { |sum, (_, _, len)| sum + len + 1 } 
-        end
+        space_array = (prior_locs + [loc]).each_cons(2).map { |(i1, *), (i2, *)| i1 == i2 ? 0 : 1 }
+        spaces = space_array.reduce(0, :+)
 
-        prefix + l_start
+        content = prior_locs.map { |_, _, len| len }
+                            .reduce(0, :+)
+
+        spaces + content
       end
     end
 

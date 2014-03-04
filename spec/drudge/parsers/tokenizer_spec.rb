@@ -70,7 +70,10 @@ class Drudge
       describe ".underline_token" do 
         let(:sexps) { [[:val, 'hello', {loc: [0, 0, 5]}],
                        [:val, 'dear', {loc: [1, 0, 4]}],
-                       [:val, 'world', {loc: [2, 0, 5]}]] }
+                       [:'--', 'key', {loc: [2, 0, 5]}],
+                       [:'=', 'key', {loc: [2, 5, 1]}],
+                       [:val, 'val', {loc: [2, 6, 3]}],
+                       [:val, 'world', {loc: [3, 0, 5]}]] }
 
         it "underlines first token" do
           expect(Tokenizer.underline_token(sexps, sexps[0])).to eq "~~~~~"
@@ -80,12 +83,24 @@ class Drudge
           expect(Tokenizer.underline_token(sexps, sexps[1])).to eq "      ~~~~"
         end
 
-        it "underlines the third token" do
+        it "underlines the :-- token" do 
           expect(Tokenizer.underline_token(sexps, sexps[2])).to eq "           ~~~~~"
         end
 
+        it "underlines the := token" do 
+          expect(Tokenizer.underline_token(sexps, sexps[3])).to eq "                ~"
+        end
+
+        it "underlines the val token after the =" do
+          expect(Tokenizer.underline_token(sexps, sexps[4])).to eq "                 ~~~"
+        end
+
+        it "underlines the third token" do
+          expect(Tokenizer.underline_token(sexps, sexps[5])).to eq "                     ~~~~~"
+        end
+
         it "underlines the end of string when token is nil" do
-          expect(Tokenizer.underline_token(sexps, nil)).to eq "                 ^"
+          expect(Tokenizer.underline_token(sexps, nil)).to eq "                           ^"
         end
 
         it "can be told which underline char to use" do
