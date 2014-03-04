@@ -22,16 +22,59 @@ class Drudge
 
     end
 
+    # returns a parser that matches a :-- sexps on input (long options). The parser converts them to
+    # a [:longopt, option] sexp
+    def longopt(expected,
+                eos_failure_msg: "expected a keyword argument",
+                failure_msg:     -> ((_, value)) { "'#{value}' doesn't match #{expected}" } )
+
+      accept(-> ((kind, value)) { kind == :'--' && expected === value },
+             eos_failure_msg: eos_failure_msg,
+             failure_msg: failure_msg)
+        .mapv { |_, value| [:longopt, value] }
+        .describe "--#{expected}"
+    end
+
+
     # matches the end of the stream
     def eos(message = "Expected end-of-command")
       super
     end
 
+
+    # a parser for the options end token :!-- 
+    def optend
+      accept { |kind, * | kind == :'!--' }.discard.describe("--")
+    end
+
     # parses a single argument with the provided name
     def arg(name, expected = value(/.*/))
-      expected.mapv                 { |a| [:arg, a] }
-              .with_failure_message { |msg| "#{msg} for <#{name}>" }
-              .describe "<#{name}>"
+      longopt_adapter = -> v do
+        kind, value1, *rest = v
+
+        case kind
+        when :'--'
+          [:val, "--#{value1}", *rest]
+        else
+          v
+        end
+      end
+
+      arg_parser = expected | try_as(longopt_adapter, expected)
+
+      arg_parser.mapv                 { |a| [:arg, a] }
+                .with_failure_message { |msg| "#{msg} for <#{name}>" }
+                .describe "<#{name}>"
+    end
+
+    # parses a keyword argument 
+    def keyword_arg(name, value_parser)
+      eq_token = accept { |kind, *| kind == :'=' }.optional.discard
+
+      (longopt(name.to_s) > eq_token > commit(value_parser))
+          .mapr                 { |parse_value| Single([:keyword_arg, name, parse_value.value.last]) }
+          .with_failure_message { |msg| "#{msg} for --#{name}" }
+          .describe "--#{name} #{value_parser}"
     end
 
     # parses a command
@@ -72,10 +115,12 @@ class Drudge
       # a parser that collates the results of argument parsing
       def collated_arguments
         self.mapr do |results|
-          args = results.to_a.reduce({args: []}) do |a, (kind, value, *rest)|
+          args = results.to_a.reduce({args: [], keyword_args: {}}) do |a, (kind, value, value2, *)|
             case kind
             when :arg
               a[:args] << value
+            when :keyword_arg
+              a[:keyword_args][value] = value2
             end
 
             a

@@ -45,6 +45,23 @@ class Drudge
           it { should_not parse([[:foo, "bar"]]) }
         end
       end
+
+
+      describe ".longopt" do
+        subject { longopt("from") }   
+
+        it { should tokenize_and_parse(%w[--from]).as([:longopt, "from"]) }
+        it { should_not tokenize_and_parse(%w[from]) }
+        it { should_not tokenize_and_parse(%w[--]) }
+      end
+
+      describe ".optend" do 
+        subject { optend }
+
+        it { should tokenize_and_parse(%w[--]).as(nil) }
+        it { should_not tokenize_and_parse(%w[--from]) }
+      end
+
     end
 
     describe "command & argument parsers" do
@@ -92,6 +109,19 @@ class Drudge
 
       end
 
+      describe ".keyword_arg" do 
+        context "with a provided value parser" do 
+          subject { keyword_arg(:from, value("TEST")) }
+
+          it { should tokenize_and_parse(%w[--from TEST]).as([:keyword_arg, :from, 'TEST']) }
+          it { should tokenize_and_parse(%w[--from=TEST]).as([:keyword_arg, :from, 'TEST']) }
+
+          it { should_not tokenize_and_parse(%w[--from]) }
+          it { should_not tokenize_and_parse(%w[--from something]) }
+          it { should_not tokenize_and_parse(%w[--from=something]) }
+        end
+      end
+
       describe ".command" do
         context "command parser for command 'hello'" do
           subject { command("hello") }
@@ -105,7 +135,7 @@ class Drudge
         let(:p) {  command("hello") > arg(:first) > arg(:second) <= eos }
         subject { p.collated_arguments }
 
-        it { should tokenize_and_parse(%w[hello first second]).as({args: %w[hello first second]}) } 
+        it { should tokenize_and_parse(%w[hello first second]).as({args: %w[hello first second], keyword_args: {}}) } 
       end
 
 

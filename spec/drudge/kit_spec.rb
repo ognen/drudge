@@ -48,8 +48,8 @@ class Drudge
         describe "#argument_parser" do
           subject { kit.argument_parser }
 
-          it { should tokenize_and_parse(%w[cli hello]).as({args: %w[cli hello]}) }
-          it { should tokenize_and_parse(%w[cli goodbye]).as({args: %w[cli goodbye]}) }
+          it { should tokenize_and_parse(%w[cli hello]).as({args: %w[cli hello], keyword_args: {}}) }
+          it { should tokenize_and_parse(%w[cli goodbye]).as({args: %w[cli goodbye], keyword_args: {}}) }
 
           it { should_not tokenize_and_parse(%w[cli foo]) }
           it { should_not tokenize_and_parse(%w[cli hello someone]) }

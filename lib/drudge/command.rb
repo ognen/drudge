@@ -46,6 +46,24 @@ class Drudge
 
     # creates an argument parser for the command
     def argument_parser
+      keyword_arguments_parser > plain_arguments_parser
+    end
+
+    def keyword_arguments_parser
+      if keyword_params.any?
+        keywords_end = optend.optional
+
+        keyword_argument_parser = keyword_params.values.map(&:argument_parser).reduce do |aggregate, p|
+          aggregate | p
+        end
+
+        keyword_argument_parser.repeats(:*) > keywords_end
+      else
+        success(Empty())
+     end 
+    end
+
+    def plain_arguments_parser
       end_of_args = eos("extra command line arguments provided")
 
       parser = params.reverse.reduce(end_of_args) do |rest, param|
@@ -58,7 +76,6 @@ class Drudge
         end
       end
     end
-
   end
 
   class AbstractParam
@@ -113,7 +130,11 @@ class Drudge
 
   # represents a keyword parameter
   class KeywordParam < AbstractParam
-  end
 
+    # returns a parser that is able to parse the keyword argument
+    def argument_parser
+      keyword_arg(name, value(/.+/))
+    end
+  end
 
 end

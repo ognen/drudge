@@ -55,16 +55,30 @@ class Drudge
         parser { |input| Success(parse_value, input) }.describe "SUCC: #{parse_value}"
       end
 
-     # matches the end of the stream
-     def eos(message)
-      parser do |input|
-        if input.empty?
-          Success(Empty(), [])
-        else
-          Failure(message, input)
-        end
-      end.describe ""
-    end        
+      def try_as(token_converter, other_parser)
+        parser do |input|
+          value, *rest = input
+
+          case 
+          when input.nil? || input.empty?
+            other_parser[input]
+          else
+            alternate_input = [token_converter[value]] + rest
+            other_parser[alternate_input]
+          end
+        end.describe other_parser.to_s
+      end
+
+      # matches the end of the stream
+      def eos(message)
+        parser do |input|
+          if input.empty?
+            Success(Empty(), [])
+          else
+            Failure(message, input)
+          end
+        end.describe ""
+      end        
 
       # Commits the provided parser. If +prs+ returns
       # a +Failure+, it will be converted into an +Error+ that 

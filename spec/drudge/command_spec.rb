@@ -91,11 +91,43 @@ class Drudge
             command.argument_parser.collated_arguments
           end
 
-          it { should tokenize_and_parse(%w[Joe]).as({args: %w[Joe]}) }
+          it { should tokenize_and_parse(%w[Joe]).as({args: %w[Joe], keyword_args: {}}) }
           it { should_not tokenize_and_parse(%w[]) }
           it { should_not tokenize_and_parse(%w[Joe Green]) }
         end
+      end
 
+      describe "a comand called 'greet' with one parameter and two keyword parameters" do
+        subject(:command) do
+          Command.new(:greet, 
+                      [Param.any(:message), 
+                       KeywordParam.any(:from), 
+                       KeywordParam.any(:to)],
+                      -> (message, from: "someone", to: "else") { puts "#{from} says #{message} to #{to}" })
+        end
+
+        describe "tghe argument parser for this command" do
+          subject(:parser) do
+            command.argument_parser.collated_arguments
+          end
+
+          it { should tokenize_and_parse(%w[hello]).as({args: %w[hello], keyword_args: {}}) }
+          it { should tokenize_and_parse(%w[--from Santa --to Joe hello]).as({args: %w[hello], 
+                                                                              keyword_args: {from: 'Santa', 
+                                                                                             to: 'Joe'}}) }
+          it { should tokenize_and_parse(%w[--to Joe --from Santa hello]).as({args: %w[hello], 
+                                                                              keyword_args: {from: 'Santa', 
+                                                                                             to: 'Joe'}}) }
+          it { should tokenize_and_parse(%w[--to Joe hello]).as({args: %w[hello], 
+                                                                 keyword_args: {to: 'Joe'}}) }
+          it { should tokenize_and_parse(%w[--from=Santa -- --to]).as({args: %w[--to], 
+                                                                       keyword_args: {from: 'Santa'}}) }
+
+
+          it { should_not tokenize_and_parse(%w[--from]) }
+          it { should_not tokenize_and_parse(%w[--from Joe]) }
+          it { should_not tokenize_and_parse(%w[--something Joe hello]) }
+        end
       end
     end
   end
