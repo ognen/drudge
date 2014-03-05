@@ -12,7 +12,7 @@ class Drudge
     # all sorts of things)
     def value(expected = /.*/, 
               eos_failure_msg: "expected a value", 
-              failure_msg:     -> ((_, value)) { "'#{value}' doesn't match #{expected}" })
+              failure_msg: value_failure_handler)
 
       accept(-> ((kind, value)) { kind == :val && expected === value },
                eos_failure_msg: eos_failure_msg,
@@ -49,21 +49,10 @@ class Drudge
 
     # parses a single argument with the provided name
     def arg(name, expected = value(/.*/))
-      longopt_adapter = -> v do
-        kind, value1, *rest = v
-
-        case kind
-        when :'--'
-          [:val, "--#{value1}", *rest]
-        else
-          v
-        end
-      end
-
-      arg_parser = expected | try_as(longopt_adapter, expected)
+      arg_parser = expected 
 
       arg_parser.mapv                 { |a| [:arg, a] }
-                .with_failure_message { |msg| "#{msg} for <#{name}>" }
+                .with_failure_message { |msg| "#{msg} for argument <#{name}>" }
                 .describe "<#{name}>"
     end
 
@@ -84,6 +73,18 @@ class Drudge
         .mapv { |v| [:arg, v] }
         .describe(name.to_s)
     end
+
+
+    def value_failure_handler
+      -> ((kind, value)) do
+        case kind
+        when :'--' then "unexpected switch '--#{value}'"
+        when :'=' then "unexpected '='"
+        else "unexpected '#{value}'"
+        end
+      end
+    end
+    private :value_failure_handler
 
     def parser_mixin
       ArgumentParser

@@ -43,11 +43,12 @@ class Drudge
                                 [:val, 'value', {loc: [1, 10, 5]}]]
         end
 
-        it "converts the '--' argument into [:!--] " do
-          tokens = Tokenizer.tokenize(%w[hello --])
+        it "converts the all '--keyword' argumets into [:val, '--keword'] after the '--'" do
+          tokens = Tokenizer.tokenize(%w[hello -- --keyword])
 
           expect(tokens).to eq [[:val, 'hello', {loc: [0, 0, 5]}],
-                                [:"!--", {loc: [1, 0, 2]}]]
+                                [:"!--", {loc: [1, 0, 2]}],
+                                [:val, '--keyword', {loc: [2, 0, 9]}]]
         end
 
       end

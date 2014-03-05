@@ -22,11 +22,11 @@ Scenario Outline: Splatt arguments at the end of the command
   Then the output should contain "<output>"
 
   Examples: 
-     | command                                 | output                              |
-     | cli greet                               | error: expected a value for <from>: |
-     | cli greet Santa Hi                      | Santa says: Hi                      |
-     | cli greet Santa Hi Aloha                | Santa says: Hi, Aloha               |
-     | cli greet Santa Hi Aloha 'Good Morning' | Santa says: Hi, Aloha, Good Morning |
+    | command                                 | output                                       |
+    | cli greet                               | error: expected a value for argument <from>: |
+    | cli greet Santa Hi                      | Santa says: Hi                               |
+    | cli greet Santa Hi Aloha                | Santa says: Hi, Aloha                        |
+    | cli greet Santa Hi Aloha 'Good Morning' | Santa says: Hi, Aloha, Good Morning          |
  
 
   Scenario Outline: Splatt arguments in the middle of the command
@@ -48,12 +48,12 @@ Scenario Outline: Splatt arguments at the end of the command
     Then the output should contain "<output>"
 
     Examples:
-       | command                      | output                             |
-       | cli greet                    | error: expected a value for <from> |
-       | cli greet Santa              | error: expected a value for <to>   |
-       | cli greet Santa Joe          | Santa says:  to Joe                |
-       | cli greet Santa Hi Joe       | Santa says: Hi to Joe              |
-       | cli greet Santa Hi Aloha Joe | Santa says: Hi, Aloha to Joe       |
+      | command                      | output                                      |
+      | cli greet                    | error: expected a value for argument <from> |
+      | cli greet Santa              | error: expected a value for argument <to>   |
+      | cli greet Santa Joe          | Santa says:  to Joe                         |
+      | cli greet Santa Hi Joe       | Santa says: Hi to Joe                       |
+      | cli greet Santa Hi Aloha Joe | Santa says: Hi, Aloha to Joe                |
 
   Scenario Outline: Splatt arguments at the beginning of the ocmmand
     Given a Ruby script called "cli" with:
@@ -74,12 +74,12 @@ Scenario Outline: Splatt arguments at the end of the command
     Then the output should contain "<output>"
 
     Examples:
-         | command                          | output                                |
-         | cli greet                        | error: expected a value for <message> |
-         | cli greet Hi                     | error: expected a value for <to>      |
-         | cli greet Hi Joe                 | all say: Hi to Joe                    |
-         | cli greet Santa Hi Joe           | Santa all say: Hi to Joe              |
-         | cli greet Santa Spiderman Hi Joe | Santa, Spiderman all say: Hi to Joe   |
+      | command                          | output                                         |
+      | cli greet                        | error: expected a value for argument <message> |
+      | cli greet Hi                     | error: expected a value for argument <to>      |
+      | cli greet Hi Joe                 | all say: Hi to Joe                             |
+      | cli greet Santa Hi Joe           | Santa all say: Hi to Joe                       |
+      | cli greet Santa Spiderman Hi Joe | Santa, Spiderman all say: Hi to Joe            |
 
 
   Scenario Outline: Splatt arguments combined with optional arguments
@@ -101,11 +101,11 @@ Scenario Outline: Splatt arguments at the end of the command
     Then the output should contain "<output>"
 
     Examples:
-         | command                                        | output                                                  |
-         | cli greet                                      | error: expected a value for <from>                      |
-         | cli greet Santa                                | error: expected a value for <to>                        |
-         | cli greet Santa Joe                            | Santa says first Hi, then  to Joe                       |
-         | cli greet Santa Hello Joe                      | Santa says first Hello, then  to Joe                    |
-         | cli greet Santa Hello Aloha Joe                | Santa says first Hello, then Aloha to Joe               |
-         | cli greet Santa Hello Aloha 'Good Morning' Joe | Santa says first Hello, then Aloha, Good Morning to Joe |
+      | command                                        | output                                                  |
+      | cli greet                                      | error: expected a value for argument <from>             |
+      | cli greet Santa                                | error: expected a value for argument <to>               |
+      | cli greet Santa Joe                            | Santa says first Hi, then  to Joe                       |
+      | cli greet Santa Hello Joe                      | Santa says first Hello, then  to Joe                    |
+      | cli greet Santa Hello Aloha Joe                | Santa says first Hello, then Aloha to Joe               |
+      | cli greet Santa Hello Aloha 'Good Morning' Joe | Santa says first Hello, then Aloha, Good Morning to Joe |
 

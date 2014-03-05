@@ -9,22 +9,7 @@ class Drudge
       # the sexps are then suitable for the Drudge::parsers parser 
       # combinators
       def tokenize(argv)
-        argv.flat_map.with_index do |arg, index|
-          case arg
-          when /^--$/ 
-            [[:"!--", loc(index, arg.length)]]
-          when /^--([^=]+)$/
-            [[:"--", $1, loc(index, arg.length)]]
-          when /^--([^=]+)=(.*)$/
-            keyword = $1
-            value   = $2
-            [[:"--", $1, loc(index, keyword.length + 2)],
-             [:"=", loc(index, keyword.length + 2, 1)],
-             [:val, value, loc(index, keyword.length + 3, value.length)]]
-           else
-            [[:val, arg, loc(index, arg.length)]]
-          end
-        end
+        tokenize_second_pass(tokenize_first_paass(argv))
       end
 
       # given an array of sexps (as returned by tokenize) produce 
@@ -67,6 +52,41 @@ class Drudge
 
 
       private 
+
+      def tokenize_first_paass(argv)
+        argv.flat_map.with_index do |arg, index|
+          case arg
+          when /^--$/ 
+            [[:"!--", loc(index, arg.length)]]
+          when /^--([^=]+)$/
+            [[:"--", $1, loc(index, arg.length)]]
+          when /^--([^=]+)=(.*)$/
+            keyword = $1
+            value   = $2
+            [[:"--", $1, loc(index, keyword.length + 2)],
+             [:"=", loc(index, keyword.length + 2, 1)],
+             [:val, value, loc(index, keyword.length + 3, value.length)]]
+           else
+            [[:val, arg, loc(index, arg.length)]]
+          end
+        end
+      end
+
+      def tokenize_second_pass(tokens)
+        tokens.reduce([false, []]) do |all, token|
+          optend, aggregate  = all
+          kind, value, *rest = token
+
+          case [kind, optend]
+          when [:'--', true]
+            [optend, aggregate << [:val, "--#{value}", *rest]]
+          when [:'!--', false]
+            [true, aggregate << token]
+          else
+            [optend, aggregate << token]
+          end
+        end[1]
+      end
 
       def loc(index, start = 0, len)
         {loc: [index, start, len]}

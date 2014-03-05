@@ -33,13 +33,13 @@ class Drudge
       @params         = params.select { |p| Param === p }
       @keyword_params = Hash[params.select { |p| KeywordParam === p }
                                    .map    { |p| [p.name, p] }]
-      @body           = body
+      @body           = with_keyword_arg_handling(body)
       @desc           = desc
     end
 
     # runs the command 
-    def dispatch(*args)
-      @body.call(*args)
+    def dispatch(*args, **keyword_args)
+      @body.call(*args, **keyword_args)
     rescue ArgumentError => e
       raise CommandArgumentError.new(name), e.message
     end
@@ -48,6 +48,8 @@ class Drudge
     def argument_parser
       keyword_arguments_parser > plain_arguments_parser
     end
+
+    private
 
     def keyword_arguments_parser
       if keyword_params.any?
@@ -76,6 +78,17 @@ class Drudge
         end
       end
     end
+
+    def with_keyword_arg_handling(proc)
+      -> *args, **keyword_args do
+        if keyword_args.empty?
+          proc.call(*args)
+        else
+          proc.call(*args, **keyword_args)
+        end
+      end
+    end
+    
   end
 
   class AbstractParam

@@ -84,7 +84,7 @@ Feature: Simple Commands
     When I run `cli greet`
     Then the output should contain:
     """
-    error: expected a value for <someone>:
+    error: expected a value for argument <someone>:
 
         cli greet
                   ^

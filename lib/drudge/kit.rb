@@ -26,13 +26,11 @@ class Drudge
 
     # Dispatches a command within the kit
     # The first argument is the command name
-    def dispatch(command_name, *args)
+    def dispatch(command_name, *args, **keyword_args)
       command = find_command(command_name) rescue nil
-
       raise UnknownCommandError.new(name), "A command is required" unless command
 
-      command.dispatch *args
-      
+      command.dispatch *args, **keyword_args
     end
 
     # returns the argument parser for this kit

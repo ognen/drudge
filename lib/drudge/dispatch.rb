@@ -18,9 +18,9 @@ class Drudge
         complete_args = command_name, *args
 
         argument_parser       = cli_kit.argument_parser
-        _, *command_arguments = argument_parser.parse!(complete_args)[:args]
+        (_, *command_arguments), keyword_arguments = argument_parser.parse!(complete_args).values_at(:args, :keyword_args)
 
-        cli_kit.dispatch(*command_arguments)
+        cli_kit.dispatch(*command_arguments, **keyword_arguments)
 
       rescue CliError => e
         puts "#{e.command}: #{e.message}"
