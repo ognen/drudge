@@ -29,3 +29,23 @@ Scenario Outline: Keyword argument for a command
    | cli greet Hello --Joe           | error: extra command line arguments provided           |
    | cli greet --to Joe Hello        | error: unexpected switch '--to' for argument <message> |
    | cli greet --from Joe -- --hello | Joe says: --hello                                      |
+
+
+Scenario: Keyword argument name transliteration
+  Given a Ruby script called "cli" with:
+  """
+  require 'drudge'
+
+  class Cli < Drudge
+
+    desc "Greets people"
+    def greet(message, coming_from: "Santa")
+      puts "#{coming_from} says: #{message}" 
+    end
+
+  end
+
+  Cli.dispatch
+  """
+  When I run `cli greet --coming-from Joe hello`
+  Then the output should contain "Joe says: hello"

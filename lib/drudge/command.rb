@@ -105,6 +105,18 @@ class Drudge
       @type = type.to_sym
     end
 
+    # external name of the parameter
+    def external_name
+      to_external(name)
+    end
+
+    # Converts an internal name to external one for use in the shell
+    def to_external(str)
+      str.to_s.tr('_', '-')
+    end
+
+    protected :to_external
+
     # factory methods for every type of parameter
     class << self
       TYPES.each do |type|
@@ -134,7 +146,7 @@ class Drudge
     # returns a parser that is able to parse arguments
     # fitting this parameter
     def argument_parser
-      arg(name, value(/.+/))
+      arg(external_name, value(/.+/))
     end
   end
 
@@ -143,7 +155,7 @@ class Drudge
 
     # returns a parser that is able to parse the keyword argument
     def argument_parser
-      keyword_arg(name, value(/.+/))
+      keyword_arg(external_name, name, value(/.+/))
     end
   end
 

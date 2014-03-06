@@ -57,11 +57,11 @@ class Drudge
     end
 
     # parses a keyword argument 
-    def keyword_arg(name, value_parser)
+    def keyword_arg(name, keyword, value_parser)
       eq_token = accept { |kind, *| kind == :'=' }.optional.discard
 
-      (longopt(name.to_s) > eq_token > commit(value_parser))
-          .mapr                 { |parse_value| Single([:keyword_arg, name, parse_value.value.last]) }
+      (longopt(name) > eq_token > commit(value_parser))
+          .mapr                 { |parse_value| Single([:keyword_arg, keyword, parse_value.value.last]) }
           .with_failure_message { |msg| "#{msg} for --#{name}" }
           .describe "--#{name} #{value_parser}"
     end
@@ -84,7 +84,12 @@ class Drudge
         end
       end
     end
-    private :value_failure_handler
+
+    def transliterate_keyword_arg(arg)
+      arg.to_s.tr('_', '-')
+    end
+
+    private :value_failure_handler, :transliterate_keyword_arg
 
     def parser_mixin
       ArgumentParser

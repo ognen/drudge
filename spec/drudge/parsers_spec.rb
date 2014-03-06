@@ -111,7 +111,7 @@ class Drudge
 
       describe ".keyword_arg" do 
         context "with a provided value parser" do 
-          subject { keyword_arg(:from, value("TEST")) }
+          subject { keyword_arg("from", :from, value("TEST")) }
 
           it { should tokenize_and_parse(%w[--from TEST]).as([:keyword_arg, :from, 'TEST']) }
           it { should tokenize_and_parse(%w[--from=TEST]).as([:keyword_arg, :from, 'TEST']) }

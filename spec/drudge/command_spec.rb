@@ -102,8 +102,9 @@ class Drudge
           Command.new(:greet, 
                       [Param.any(:message), 
                        KeywordParam.any(:from), 
-                       KeywordParam.any(:to)],
-                      -> (message, from: "someone", to: "else") { puts "#{from} says #{message} to #{to}" })
+                       KeywordParam.any(:to),
+                       KeywordParam.any(:coming_from)],
+                      -> (message, from: "someone", to: "else", coming_from: "bla") { puts "#{from} (coming from #{coming_from}) says #{message} to #{to}" })
         end
 
         describe "tghe argument parser for this command" do
@@ -120,6 +121,9 @@ class Drudge
                                                                                              to: 'Joe'}}) }
           it { should tokenize_and_parse(%w[--to Joe hello]).as({args: %w[hello], 
                                                                  keyword_args: {to: 'Joe'}}) }
+          it { should tokenize_and_parse(%w[--to Joe --coming-from Skopje hello]).as({args: %w[hello],
+                                                                                      keyword_args: {to: 'Joe', 
+                                                                                                     coming_from: 'Skopje'}}) }
           it { should tokenize_and_parse(%w[--from=Santa -- --to]).as({args: %w[--to], 
                                                                        keyword_args: {from: 'Santa'}}) }
 
