@@ -75,7 +75,7 @@ class Drudge
             it { should tokenize_and_parse(%w[anything]).as([:arg, "anything"]) }
 
             it "should include the expected paraemeter name in the error message" do
-              expect(subject.call([])).to eq(Failure("expected a value for <test>", []))
+              expect(subject.call([])).to eq(Failure("expected a value for argument <test>", []))
             end
           end
 
