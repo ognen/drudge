@@ -7,15 +7,15 @@ class Drudge
       module FactoryMethods
         # helper methods for constructing 
 
-        def Success(value, remaining)
+        def Success(value, remaining = [])
           Success.new(value, remaining) 
         end
 
-        def Failure(message, remaining)
+        def Failure(message, remaining = [])
           Failure.new(message, remaining)
         end
 
-        def Error(message, remaining)
+        def Error(message, remaining = [])
           Error.new(message, remaining)
         end
 
