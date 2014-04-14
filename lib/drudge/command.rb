@@ -91,8 +91,6 @@ class Drudge
   class AbstractParam
     include Parsers
 
-    TYPES = %i[any string]
-
     # the argument's name
     attr_reader :name
 
@@ -117,14 +115,6 @@ class Drudge
 
     protected :to_external
 
-    # factory methods for every type of parameter
-    class << self
-      TYPES.each do |type|
-        define_method type do |name, *rest|
-          new(name, type, *rest)
-        end
-      end
-    end
   end
 
   # Represents a command parameter

@@ -144,5 +144,68 @@ class Drudge
       end
     end
   end
-  
+
+  describe "declaring parameter types" do
+    class WithParameters
+      include ClassDSL
+
+      desc "Greets people"
+      param :message, :integer
+      param :sent_date, type: :date
+      
+      def greet(message, sent_date)
+        puts "#{message.class}, #{sent_date.class}"
+      end
+
+      desc "another greeting"
+      params message: :string, sent_date: :date
+      def greet2(message, sent_date)
+      end
+
+      desc "yet another"
+      params message: {type: :string}, sent_date: {type: :date}
+      def greet3(message, sent_date)
+      end
+
+    end 
+
+    subject(:kit) { WithParameters.new.to_kit(:cli) }
+
+    describe "declaring the type using 'param :param_name, :param_type" do
+      subject(:command) { kit.commands[0] }
+
+      it "'s first parameter's type is :integer" do
+        expect(command.params[0].type).to eq :integer
+      end
+
+       it "'s secind parameter's type is :date" do
+        expect(command.params[1].type).to eq :date
+      end
+    end
+
+    describe "declaring the type using 'params message: :string, sent_date: :date" do
+      subject(:command) { kit.commands[1] }
+
+      it "'s first parameter's type is :string" do
+        expect(command.params[0].type).to eq :string
+      end
+
+       it "'s secind parameter's type is :date" do
+        expect(command.params[1].type).to eq :date
+      end
+    end
+
+    describe "declaring the type using 'params message: {type: string}, sent_date: {type: date}'" do
+      subject(:command) { kit.commands[2] }
+
+      it "'s first parameter's type is :string" do
+        expect(command.params[0].type).to eq :string
+      end
+
+       it "'s secind parameter's type is :date" do
+        expect(command.params[1].type).to eq :date
+      end
+    end
+  end
+
 end

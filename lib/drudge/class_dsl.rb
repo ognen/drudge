@@ -37,17 +37,43 @@ class Drudge
         @__command_meta[:desc] = description
       end
 
+      def param(name, type_positional = nil, type: :string) 
+        type = type_positional if type_positional
+        @__command_meta ||= {}
+        @__command_meta[:params] ||= {}
+        @__command_meta[:params][name.to_sym] = { type: type }
+      end
+
+      def params(**declared_params)
+        desugared = declared_params.map do |param, v|
+          case v
+          when Symbol
+            [param, {type: v}]
+          when Hash
+            [param, v]
+          else
+            raise "unsupported parameter declaration: #{param}: v"
+          end
+        end
+
+        desugared.each do |param, meta|
+          param param, **meta
+        end
+      end
+
       def method_added(m)
         if @__command_meta and @__command_meta[:desc]
           meth = instance_method(m)
 
           @__commands ||= []
           @__commands << { name:   meth.name, 
-                           params: parse_command_parameters(meth.parameters),
+                           params: parse_command_parameters(meth.parameters,
+                                                            @__command_meta[:params]),
                            meta:   { desc: @__command_meta[:desc] } }
 
-          @__command_meta = {}
         end
+
+        @__command_meta = {}
 
         super
       end
@@ -90,16 +116,29 @@ class Drudge
 
       private
 
-      def parse_command_parameters(method_parameters)
+      def parse_command_parameters(method_parameters, parameters_meta)
+        parameters_meta ||= {}
+
         method_parameters.map do |kind, name|
+          meta = param_meta_with_defaults(parameters_meta[name])
+          type = meta[:type]
+
           case kind
-          when :req then Param.any(name)
-          when :opt then Param.any(name, optional: true)
-          when :rest then Param.any(name, splatt: true)
-          when :key then KeywordParam.any(name)
+          when :req then Param.new(name, type)
+          when :opt then Param.new(name, type, optional: true)
+          when :rest then Param.new(name, type, splatt: true)
+          when :key then KeywordParam.new(name, type)
           else raise "Unsupported parameter type"
           end
         end
+      end
+
+      def param_meta_with_defaults(meta)
+        defaults = {
+          type: :string
+        }
+
+        defaults.merge(meta || {})
       end
     end
     
