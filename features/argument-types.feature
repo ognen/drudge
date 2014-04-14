@@ -2,7 +2,7 @@ Feature: Argument types
   Support typing arguments that are parsed on the command line.
 
   Scenario Outline: Ordered argument typing, the 'param' method
-    Given a ruby script called "cli" with:
+    Given a Ruby script called "cli" with:
     """
     require 'drudge'
 
@@ -30,6 +30,7 @@ Feature: Argument types
 
 
   Scenario Outline: Ordered argument typing, the 'params' method
+    Given a Ruby script called "cli" with:
     """
     require 'drudge'
 
@@ -48,6 +49,16 @@ Feature: Argument types
 
     Cli.dispatch
     """
-
+    When I run `<command>`
+    Then the output should contain "<output>"
+    
+    Examples:
+      | commmand                 | output                      |
+      | cli greet 1 31.12.2014   | String, Date                |
+      | cli greet who 31.12.2014 | String, Date                |
+      | cli greet 1 else         | error: 'else' is not a date |
+      | cli greet 1 31.12.2014   | String, Date                |
+      | cli greet who 31.12.2014 | String, Date                |
+      | cli greet 1 else         | error: 'else' is not a date |
 
 
