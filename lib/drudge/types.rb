@@ -3,6 +3,8 @@ require 'drudge/parsers'
 
 class Drudge
 
+  # This module allows type declarations that are used in command
+  # line argument parsing.
   module Types
 
     TYPE_HANDLING_METHODS = %i[def_type type_parser clear_types]

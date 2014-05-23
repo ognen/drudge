@@ -114,7 +114,6 @@ class Drudge
     end
 
     protected :to_external
-
   end
 
   # Represents a command parameter

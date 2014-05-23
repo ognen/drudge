@@ -1,23 +1,54 @@
 require 'drudge/errors'
 require 'drudge/parsers/tokenizer'
 require 'drudge/parsers/primitives'
+require 'drudge/built_in_types'
 
 class Drudge
 
   module Parsers
     include Primitives
 
+    def lift_type_parser(type_parser, 
+                         eos_failure_msg: "expected a value")
+
+      -> parse_result do |result|
+        result.flat_map do |parse_value|
+          parsed = type_parser[parse_value.to_a.first]
+
+          case parsed
+          when Success
+            Success(Single(parsed.parse_result), result.remaining)
+          else
+            Failure("'#{parse_value.value}' #{parsed.message}", result.remaining)
+          end
+        end
+      end
+    end
+
+    def accept_just(expected) 
+      -> parse_result do |result|
+        result.flat_map do |parse_value|
+          if expected === parse_value.to_a.first
+            Success(Single)
+
+          
+        end
+          
+        end
+      end
+    end
+
     # returns a parser that matches a :val on the input
     # +expected+ is compared to the input using === (i.e. you can use it as a matcher for
     # all sorts of things)
-    def value(expected = /.*/, 
+    def value(type_parser,
               eos_failure_msg: "expected a value", 
               failure_msg: value_failure_handler)
 
-      accept(-> ((kind, value)) { kind == :val && expected === value },
+      accept(-> ((kind, *)) { kind == :val },
                eos_failure_msg: eos_failure_msg,
                failure_msg: failure_msg )
-        .mapv { |_, value| value }
+        .map(&lift_type_parser(type_parser))
         .describe expected.to_s
 
     end
@@ -48,7 +79,7 @@ class Drudge
     end
 
     # parses a single argument with the provided name
-    def arg(name, expected = value(/.*/))
+    def arg(name, expected = value(Types.type_parser(:string)))
       arg_parser = expected 
 
       arg_parser.mapv                 { |a| [:arg, a] }

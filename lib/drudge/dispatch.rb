@@ -1,6 +1,7 @@
 require 'drudge/ext'
 require 'drudge/parsers/tokenizer'
 
+
 class Drudge
 
   module Dispatch
@@ -10,6 +11,7 @@ class Drudge
     end
 
     module ClassMethods
+
       Tokenizer = Drudge::Parsers::Tokenizer
 
       # Runs the CLI with the specified arguments
