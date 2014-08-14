@@ -1,6 +1,7 @@
 require 'drudge/ext'
 require 'drudge/parsers/tokenizer'
 
+using Ext
 
 class Drudge
 

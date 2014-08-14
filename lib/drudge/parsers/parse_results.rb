@@ -101,6 +101,10 @@ class Drudge
           end
         end
 
+        def to_s
+          "Success(#{parse_result}, remaining = #{remaining})"
+        end
+
       end
 
       # an unsuccesful parse result
@@ -133,11 +137,19 @@ class Drudge
       # A failure that allows for backtracking
       Failure = Struct.new(:message, :remaining) do
         include NotSuccess
+
+        def to_s
+          "Failure(#{message}, remaining = #{remaining})"
+        end
       end
 
       # An error doesn't allow backtracking
       Error = Struct.new(:message, :remaining) do
         include NotSuccess
+
+        def to_s
+          "Error(#{message}, remaining = #{remaining})"
+        end
       end
 
 
@@ -184,6 +196,10 @@ class Drudge
         end
 
         alias :eql? :==
+
+        def to_s
+          "(/)"
+        end
       end
 
       Single = Struct.new(:value) do
@@ -213,6 +229,10 @@ class Drudge
 
         def to_a
           [value]
+        end
+
+        def to_s
+          value.to_s
         end
 
       end
@@ -245,6 +265,10 @@ class Drudge
 
         def to_a
           value
+        end
+
+        def to_s
+          value.to_s
         end
       end
 

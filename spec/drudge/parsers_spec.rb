@@ -44,6 +44,20 @@ class Drudge
           it { should_not parse([[:val, "something else"]]) }
           it { should_not parse([[:foo, "bar"]]) }
         end
+
+        context "with a symbol argument denoting a type" do
+          subject { value(:string) }
+
+          it { should parse([[:val, "abc"]]).as("abc") }
+          it { should parse([[:val, "abd"]]).as("abd") }
+        end
+
+        context "with a directly provided type parser" do 
+          subject { value(Parsers::Types.type_parser(:string)) }
+
+          it { should parse([[:val, "abc"]]).as("abc") }
+          it { should parse([[:val, "abd"]]).as("abd") }
+        end
       end
 
 

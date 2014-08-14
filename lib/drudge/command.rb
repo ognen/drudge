@@ -1,5 +1,6 @@
 require 'drudge/errors'
 require 'drudge/parsers'
+require 'drudge/parsers/types'
 
 class Drudge
 
@@ -135,7 +136,7 @@ class Drudge
     # returns a parser that is able to parse arguments
     # fitting this parameter
     def argument_parser
-      arg(external_name, value(/.+/))
+      arg(external_name, value(type))
     end
   end
 
@@ -144,7 +145,7 @@ class Drudge
 
     # returns a parser that is able to parse the keyword argument
     def argument_parser
-      keyword_arg(external_name, name, value(/.+/))
+      keyword_arg(external_name, name, value(type))
     end
   end
 

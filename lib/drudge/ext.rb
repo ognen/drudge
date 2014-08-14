@@ -1,7 +1,7 @@
 # Extensions to standard classes
 
 module Ext
-  refine String
+  refine String do 
 
     # undents the string by removeing as much leading space
     # as the first line has. 
@@ -17,5 +17,3 @@ module Ext
     end 
   end
 end
-
-using Ext
