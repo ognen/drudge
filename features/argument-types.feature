@@ -23,7 +23,7 @@ Feature: Argument types
     Then the output should contain "<output>"
 
     Examples:
-     | commmand                 | output                         |
+     | command                  | output                         |
      | cli greet 1 31.12.2014   | Integer, Date                  |
      | cli greet who 31.12.2014 | error: 'who' is not an integer |
      | cli greet 1 else         | error: 'else' is not a date    |
@@ -53,7 +53,7 @@ Feature: Argument types
     Then the output should contain "<output>"
     
     Examples:
-      | commmand                 | output                      |
+      | command                  | output                      |
       | cli greet 1 31.12.2014   | String, Date                |
       | cli greet who 31.12.2014 | String, Date                |
       | cli greet 1 else         | error: 'else' is not a date |

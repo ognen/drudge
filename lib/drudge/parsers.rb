@@ -1,4 +1,5 @@
 require 'drudge/errors'
+require 'drudge/parsers/input'
 require 'drudge/parsers/tokenizer'
 require 'drudge/parsers/primitives'
 require 'drudge/parsers/built_in_types'
@@ -16,12 +17,13 @@ class Drudge
               eos_failure_msg: "expected a value", 
               failure_msg: value_failure_handler)
 
-      accept(-> ((kind, *)) { kind == :val },
-               eos_failure_msg: eos_failure_msg,
-               failure_msg: failure_msg )
-        .mapv { |_, value| value }
-        .coerce(Types.type_parser(type_parser))
-        .describe type_parser.to_s
+      valuep = accept(-> ((kind, *)) { kind == :val },
+                      eos_failure_msg: eos_failure_msg,
+                      failure_msg: failure_msg )
+                 .mapv { |_, value| value }
+                 .coerce(Types.type_parser(type_parser))
+
+      try(valuep).describe(type_parser.to_s)
     end
 
     # returns a parser that matches a :-- sexps on input (long options). The parser converts them to
@@ -125,12 +127,10 @@ class Drudge
       def coerce(type_parser)
         map do |result|
 
-          case result
-
-          when Success
+          if result.is_a? Success
             parse_result = result.parse_result
 
-            if Single === parse_result
+            if parse_result.is_a? Single
               type_parser_result = type_parser[result.parse_result.value]
 
               case type_parser_result
@@ -138,7 +138,7 @@ class Drudge
               else Failure(type_parser_result.message, result.remaining)
               end
             else
-              Failure("Coercion is possible only with Single ParseValues")
+              Failure("Coercion is possible only with Single ParseValues", result.remaining)
             end
 
           else

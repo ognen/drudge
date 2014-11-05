@@ -20,8 +20,9 @@ class Drudge
         cli_kit       = self.new.to_kit(command_name)
         complete_args = command_name, *args
 
-        argument_parser       = cli_kit.argument_parser
-        (_, *command_arguments), keyword_arguments = argument_parser.parse!(complete_args).values_at(:args, :keyword_args)
+        argument_parser                            = cli_kit.argument_parser
+        (_, *command_arguments), keyword_arguments = argument_parser.parse!(complete_args)
+                                                                    .values_at(:args, :keyword_args)
 
         cli_kit.dispatch(*command_arguments, **keyword_arguments)
 
@@ -33,7 +34,7 @@ class Drudge
 
               #{Tokenizer.untokenize(pe.input)}
               #{Tokenizer.underline_token(pe.input, 
-                                          pe.remaining_input.first)}
+                                          pe.remaining_input.peek)}
         EOS
 
 

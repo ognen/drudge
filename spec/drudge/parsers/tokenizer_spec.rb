@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'drudge/parsers/input'
 require 'drudge/parsers/tokenizer'
 
 class Drudge
@@ -11,9 +12,9 @@ class Drudge
         it "converts an array of command line arguments into an array of sexps" do
           tokens = Tokenizer.tokenize(%w[hello world])
 
-          expect(tokens).to be_kind_of(Enumerable)
+          expect(tokens).to be_kind_of(Input)
           
-          tokens.each do |type, arg, meta|
+          tokens.to_enum.each do |type, arg, meta|
             expect(type).to eq :val
             expect(arg).to be_kind_of(String)
             expect(meta).to include(:loc)
@@ -23,32 +24,32 @@ class Drudge
         it "converts an ordinary argument 'arg' into the sexp [:val, 'arg']" do
           tokens = Tokenizer.tokenize(%w[hello world])
 
-          expect(tokens).to eq [[:val, 'hello', {loc: [0, 0, 5]}],
-                                [:val, 'world', {loc: [1, 0, 5]}]]
+          expect(tokens).to eq Input.from([[:val, 'hello', {loc: [0, 0, 5]}],
+                                          [:val, 'world', {loc: [1, 0, 5]}]])
         end
 
         it "converts a keyword argument into the sexp [:--, 'arg']" do 
           tokens = Tokenizer.tokenize(%w[hello --arg])
 
-          expect(tokens).to eq [[:val, 'hello', {loc: [0, 0, 5]}],
-                                [:"--", 'arg', {loc: [1, 0, 5]}]]
+          expect(tokens).to eq Input.from([[:val, 'hello', {loc: [0, 0, 5]}],
+                                          [:"--", 'arg', {loc: [1, 0, 5]}]])
         end
 
         it "converts a '--keyword=value' argument into [[:--, 'keyword'], [:=], [:val, 'value']" do
           tokens = Tokenizer.tokenize(%w[hello --keyword=value])
           
-          expect(tokens).to eq [[:val, 'hello', {loc: [0, 0, 5]}],
-                                [:'--', 'keyword', {loc: [1, 0, 9]}],
-                                [:'=', {loc: [1, 9, 1]}],
-                                [:val, 'value', {loc: [1, 10, 5]}]]
+          expect(tokens).to eq Input.from([[:val, 'hello', {loc: [0, 0, 5]}],
+                                          [:'--', 'keyword', {loc: [1, 0, 9]}],
+                                          [:'=', {loc: [1, 9, 1]}],
+                                          [:val, 'value', {loc: [1, 10, 5]}]])
         end
 
         it "converts the all '--keyword' argumets into [:val, '--keword'] after the '--'" do
           tokens = Tokenizer.tokenize(%w[hello -- --keyword])
 
-          expect(tokens).to eq [[:val, 'hello', {loc: [0, 0, 5]}],
-                                [:"!--", {loc: [1, 0, 2]}],
-                                [:val, '--keyword', {loc: [2, 0, 9]}]]
+          expect(tokens).to eq Input.from([[:val, 'hello', {loc: [0, 0, 5]}],
+                                          [:"!--", {loc: [1, 0, 2]}],
+                                          [:val, '--keyword', {loc: [2, 0, 9]}]])
         end
 
       end
