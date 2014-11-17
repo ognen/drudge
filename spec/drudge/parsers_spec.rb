@@ -8,6 +8,8 @@ class Drudge
   describe Parsers do
     include Parsers
 
+    Input = Parsers::Input
+
     describe "#parser" do
       it "takes a block and extends it with ArgumentParser" do
         p = parser { |input| EOS }
@@ -21,28 +23,42 @@ class Drudge
         context "without arguments" do 
           subject { value }
 
-          it { should parse([[:val, "test"]]).as("test") }
-          it { should_not parse([[:foo, "bar"]]) }
-          it { should_not parse([]) }
+          it { should parse(Input.from([[:val, "test"]])).as("test") }
+          it { should_not parse(Input.from([[:foo, "bar"]])) }
+          it { should_not parse(Input.empty) }
           it { should_not parse(nil) }
         end
 
         context "with a string argument 'something'" do
           subject { value("something") }
 
-          it { should parse([[:val, "something"]]).as("something") }
-          it { should_not parse([[:val, "something else"]]) }
-          it { should_not parse([[:foo, "bar"]]) }
+          it { should parse(Input.from([[:val, "something"]])).as("something") }
+          it { should_not parse(Input.from([[:val, "something else"]])) }
+          it { should_not parse(Input.from([[:foo, "bar"]])) }
         end
 
         context "with a regexp argument /^ab.+/" do
           subject { value(/^ab.+/) }
 
-          it { should parse([[:val, "abc"]]).as("abc") }
-          it { should parse([[:val, "abd"]]).as("abd") }
-          it { should_not parse([[:val, "cabc"]]) }
-          it { should_not parse([[:val, "something else"]]) }
-          it { should_not parse([[:foo, "bar"]]) }
+          it { should parse(Input.from([[:val, "abc"]])).as("abc") }
+          it { should parse(Input.from([[:val, "abd"]])).as("abd") }
+          it { should_not parse(Input.from([[:val, "cabc"]])) }
+          it { should_not parse(Input.from([[:val, "something else"]])) }
+          it { should_not parse(Input.from([[:foo, "bar"]])) }
+        end
+
+        context "with a symbol argument denoting a type" do
+          subject { value(:string) }
+
+          it { should parse(Input.from([[:val, "abc"]])).as("abc") }
+          it { should parse(Input.from([[:val, "abd"]])).as("abd") }
+        end
+
+        context "with a directly provided type parser" do 
+          subject { value(Parsers::Types.type_parser(:string)) }
+
+          it { should parse(Input.from([[:val, "abc"]])).as("abc") }
+          it { should parse(Input.from([[:val, "abd"]])).as("abd") }
         end
       end
 
@@ -75,7 +91,7 @@ class Drudge
             it { should tokenize_and_parse(%w[anything]).as([:arg, "anything"]) }
 
             it "should include the expected paraemeter name in the error message" do
-              expect(subject.call([])).to eq(Failure("expected a value for argument <test>", []))
+              expect(subject.call(Input.empty)).to eq(Failure("expected a value for argument <test>"))
             end
           end
 
@@ -148,8 +164,10 @@ class Drudge
       context "a parser built with #parser" do
         subject do
           parser do |input|
-            if input[0][0] == :val && input[0][1] == "hello"
-              Success(Single(input[0][1]), input.drop(1))
+            key, value, * = input.peek
+
+            if [key, value] == [:val, "hello"]
+              Success(Single(value), input.next)
             else
               Failure("f", input)
             end
@@ -159,7 +177,7 @@ class Drudge
         describe "#parse" do
           it "tokenizes an array of [command line] args and parses it at once" do
 
-            expect(subject.parse(%w[hello world])).to eq(Success(Single("hello"), [[:val, "world", {:loc=>[1, 0, 5]}]]))
+            expect(subject.parse(%w[hello world])).to eq(Success(Single("hello"), Input.from([[:val, "world", {:loc=>[1, 0, 5]}]])))
           end
         end
 

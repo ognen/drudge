@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'drudge/parsers/primitives'
+require 'drudge/parsers/input'
 
 
 class Drudge
@@ -11,28 +12,30 @@ class Drudge
       describe ".parser: a parser function (lambda) that recognizes the next token on the input that wrapped in a ParseResult" do
 
         subject(:p) do
-          parser { |input| if input[0][0] == :val then Success(Single(input[0][1]), input.drop(1)) else Failure("f", input) end } 
+          parser { |input| if !input.empty? && input.peek[0] == :val then Success(Single(input.peek[1]), input.next) else Failure("f", input) end } 
         end
 
         it "accepts an enum of sexps (obtained from tokenize) as its single argument" do
-          expect { p[[[:val, "test"]]] }.not_to raise_error
+          expect { p[Input.from([[:val, "test"]])] }.not_to raise_error
         end
 
         context "given the input [[:val, 'test']]" do
           it "parses the value and consumes the input that produced it" do 
-            expect(p[[[:val, "test"]]]).to eq(Success(Single("test"), []))
+            expect(p[Input.from([[:val, "test"]])]).to eq(Success(Single("test")))
           end
         end
 
         context "given the input [[:val, 'test'], [:foo, 'bar']]" do
           it "parses the value and return the remaining input" do
-            expect(p[[[:val, "test"], [:foo, "bar"]]]).to eq(Success(Single("test"), [[:foo, "bar"]]))
+            input = Input.from([[:val, "test"], [:foo, "bar"]])
+
+            expect(p[input]).to eq(Success(Single("test"), input.next))
           end
         end
 
         context "given the input [[:foo, 'bar'], [:val, 'test']]" do
           it "doesn't parse the input and returns Failure" do
-            input = [[:foo, 'bar'], [:val, 'test']]
+            input = Input.from(Input.from([[:foo, 'bar'], [:val, 'test']]))
             expect(p[input]).to eq(Failure("f", input))
           end
         end
@@ -40,13 +43,9 @@ class Drudge
 
       # a parser that expects a value declared in +expected 
       def value(expected)
-        parser do |input|
-          first, *rest = input
+        take(1) do |first, input, rest|
 
-          case 
-          when first.nil? 
-            Failure("Expected a value", input)
-          when first[0] == :val && expected === first[1]
+          if first[0] == :val && expected === first[1]
             Success(Single(first[1]), rest)
           else
             Failure("'#{first[1]}' doesn't match #{expected}", input)
@@ -64,7 +63,7 @@ class Drudge
         end
 
         it "converts parser Failures into Errors" do
-          input = [[:val, "Hello"]]
+          input = Input.from([[:val, "Hello"]])
           result = prs[input]
 
           expect(result).to be_kind_of(Error)
@@ -78,8 +77,8 @@ class Drudge
           context "applied on a value('something') parser" do
             subject { value('something').mapv { |r| { args: [r] } } }
 
-            it { should parse([[:val, "something"]]).as({ args: ['something']}) } 
-            it { should_not parse([[:val, "something else"]]) }
+            it { should parse(Input.from([[:val, "something"]])).as({ args: ['something']}) } 
+            it { should_not parse(Input.from([[:val, "something else"]])) }
           end
         end
 
@@ -87,17 +86,17 @@ class Drudge
           context "value('something') > value(/-t.+/)" do
             subject { value('something') > value(/-t.+/) }
 
-            it { should parse([[:val, 'something'], [:val, '-tower']]).as(['something', '-tower']) }
-            it { should parse([[:val, 'something'], [:val, '-tower']]) }
-            it { should_not parse([[:val, 'something']])}
+            it { should parse(Input.from([[:val, 'something'], [:val, '-tower']])).as(['something', '-tower']) }
+            it { should parse(Input.from([[:val, 'something'], [:val, '-tower']])) }
+            it { should_not parse(Input.from([[:val, 'something']]))}
           end
 
           context "value('something') > value('followed by') > value('else')" do
             subject { value('something') > value('followed by') > value('else') }
 
-            it { should parse([[:val, 'something'], [:val, 'followed by'], [:val, 'else']]).as(['something', 'followed by', 'else']) }
-            it { should_not parse([[:val, 'something']]) }
-            it { should_not parse([:val, 'something'], [:val, 'other'], [:val, 'else']) }
+            it { should parse(Input.from([[:val, 'something'], [:val, 'followed by'], [:val, 'else']])).as(['something', 'followed by', 'else']) }
+            it { should_not parse(Input.from([[:val, 'something']])) }
+            it { should_not parse(Input.from([[:val, 'something'], [:val, 'other'], [:val, 'else']])) }
           end
         end
 

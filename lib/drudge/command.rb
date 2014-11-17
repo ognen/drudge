@@ -1,5 +1,6 @@
 require 'drudge/errors'
 require 'drudge/parsers'
+require 'drudge/parsers/types'
 
 class Drudge
 
@@ -91,8 +92,6 @@ class Drudge
   class AbstractParam
     include Parsers
 
-    TYPES = %i[any string]
-
     # the argument's name
     attr_reader :name
 
@@ -116,15 +115,6 @@ class Drudge
     end
 
     protected :to_external
-
-    # factory methods for every type of parameter
-    class << self
-      TYPES.each do |type|
-        define_method type do |name, *rest|
-          new(name, type, *rest)
-        end
-      end
-    end
   end
 
   # Represents a command parameter
@@ -146,7 +136,7 @@ class Drudge
     # returns a parser that is able to parse arguments
     # fitting this parameter
     def argument_parser
-      arg(external_name, value(/.+/))
+      arg(external_name, value(type))
     end
   end
 
@@ -155,7 +145,7 @@ class Drudge
 
     # returns a parser that is able to parse the keyword argument
     def argument_parser
-      keyword_arg(external_name, name, value(/.+/))
+      keyword_arg(external_name, name, value(type))
     end
   end
 

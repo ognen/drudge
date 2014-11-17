@@ -1,3 +1,5 @@
+require 'drudge/parsers/input'
+
 class Drudge
   module Parsers
 
@@ -7,15 +9,15 @@ class Drudge
       module FactoryMethods
         # helper methods for constructing 
 
-        def Success(value, remaining)
+        def Success(value, remaining = Input.empty)
           Success.new(value, remaining) 
         end
 
-        def Failure(message, remaining)
+        def Failure(message, remaining = Input.empty)
           Failure.new(message, remaining)
         end
 
-        def Error(message, remaining)
+        def Error(message, remaining = Input.empty)
           Error.new(message, remaining)
         end
 
@@ -46,7 +48,11 @@ class Drudge
         # monadic bind (or flat_map) of two sequential results
         def flat_map; end 
 
+        alias_method :and_then, :flat_map
+
         def flat_map_with_next(&parser_producer); end
+
+        alias_method :and_then_using, :flat_map_with_next
 
         # Combines this result with the other by applying the '+' operator
         # on the underlying ParseValue
@@ -80,9 +86,13 @@ class Drudge
           yield parse_result
         end
 
+        alias_method :and_then, :flat_map
+
         def flat_map_with_next(&next_parser_producer)
           next_parser_producer[self][remaining]
         end
+
+        alias_method :and_then_using, :flat_map_with_next
 
         def success?
           true
@@ -99,6 +109,10 @@ class Drudge
           else
             parse_result.value
           end
+        end
+
+        def to_s
+          "Success(#{parse_result}, remaining = #{remaining})"
         end
 
       end
@@ -120,9 +134,13 @@ class Drudge
           self
         end
 
+        alias_method :and_then, :flat_map
+
         def flat_map_with_next(&_)
           self
         end
+
+        alias_method :and_then_using, :flat_map_with_next
 
         def success?
           false
@@ -133,11 +151,19 @@ class Drudge
       # A failure that allows for backtracking
       Failure = Struct.new(:message, :remaining) do
         include NotSuccess
+
+        def to_s
+          "Failure(#{message}, remaining = #{remaining})"
+        end
       end
 
       # An error doesn't allow backtracking
       Error = Struct.new(:message, :remaining) do
         include NotSuccess
+
+        def to_s
+          "Error(#{message}, remaining = #{remaining})"
+        end
       end
 
 
@@ -184,6 +210,10 @@ class Drudge
         end
 
         alias :eql? :==
+
+        def to_s
+          "(/)"
+        end
       end
 
       Single = Struct.new(:value) do
@@ -213,6 +243,10 @@ class Drudge
 
         def to_a
           [value]
+        end
+
+        def to_s
+          value.to_s
         end
 
       end
@@ -245,6 +279,10 @@ class Drudge
 
         def to_a
           value
+        end
+
+        def to_s
+          value.to_s
         end
       end
 

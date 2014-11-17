@@ -1,3 +1,5 @@
+require 'drudge/parsers/input'
+
 class Drudge
   module Parsers
 
@@ -9,7 +11,7 @@ class Drudge
       # the sexps are then suitable for the Drudge::parsers parser 
       # combinators
       def tokenize(argv)
-        tokenize_second_pass(tokenize_first_paass(argv))
+        Input.from(tokenize_second_pass(tokenize_first_pass(argv)))
       end
 
       # given an array of sexps (as returned by tokenize) produce 
@@ -17,7 +19,7 @@ class Drudge
       def untokenize(sexps)
         spc = -> needs_space { needs_space ? " " : "" }
 
-        sexps.reduce([false, ""]) do |(needs_space, aggregate), (type, arg, *)|
+        sexps.to_enum.reduce([false, ""]) do |(needs_space, aggregate), (type, arg, *)|
           case type
           when :val
             [true, aggregate + spc[needs_space] + arg]
@@ -53,8 +55,8 @@ class Drudge
 
       private 
 
-      def tokenize_first_paass(argv)
-        argv.flat_map.with_index do |arg, index|
+      def tokenize_first_pass(argv)
+        argv.lazy.with_index.flat_map do |arg, index|
           case arg
           when /^--$/ 
             [[:"!--", loc(index, arg.length)]]
@@ -73,7 +75,7 @@ class Drudge
       end
 
       def tokenize_second_pass(tokens)
-        tokens.reduce([false, []]) do |all, token|
+        tokens.lazy.reduce([false, []]) do |all, token|
           optend, aggregate  = all
           kind, value, *rest = token
 
@@ -93,7 +95,7 @@ class Drudge
       end
 
       def index_of_sexp_in_untokenized(input, loc)
-        prior_locs = input.map { |*, meta| meta[:loc] }.take_while { |l| l != loc }
+        prior_locs = input.to_enum.map { |*, meta| meta[:loc] }.take_while { |l| l != loc }
 
         space_array = (prior_locs + [loc]).each_cons(2).map { |(i1, *), (i2, *)| i1 == i2 ? 0 : 1 }
         spaces = space_array.reduce(0, :+)

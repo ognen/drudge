@@ -1,6 +1,8 @@
 require 'drudge/errors'
+require 'drudge/parsers/input'
 require 'drudge/parsers/tokenizer'
 require 'drudge/parsers/primitives'
+require 'drudge/parsers/built_in_types'
 
 class Drudge
 
@@ -8,18 +10,20 @@ class Drudge
     include Primitives
 
     # returns a parser that matches a :val on the input
-    # +expected+ is compared to the input using === (i.e. you can use it as a matcher for
-    # all sorts of things)
-    def value(expected = /.*/, 
+    # +type_parser can be a symbol which identifes the type, 
+    #                     a string in which case the the parser parses only that string
+    #                     a regex ibn which case the parser mathes that regex
+    def value(type_parser = :string,
               eos_failure_msg: "expected a value", 
               failure_msg: value_failure_handler)
 
-      accept(-> ((kind, value)) { kind == :val && expected === value },
-               eos_failure_msg: eos_failure_msg,
-               failure_msg: failure_msg )
-        .mapv { |_, value| value }
-        .describe expected.to_s
+      valuep = accept(-> ((kind, *)) { kind == :val },
+                      eos_failure_msg: eos_failure_msg,
+                      failure_msg: failure_msg )
+                 .mapv { |_, value| value }
+                 .coerce(Types.type_parser(type_parser))
 
+      try(valuep).describe(type_parser.to_s)
     end
 
     # returns a parser that matches a :-- sexps on input (long options). The parser converts them to
@@ -48,7 +52,7 @@ class Drudge
     end
 
     # parses a single argument with the provided name
-    def arg(name, expected = value(/.*/))
+    def arg(name, expected = value(:string))
       arg_parser = expected 
 
       arg_parser.mapv                 { |a| [:arg, a] }
@@ -68,9 +72,10 @@ class Drudge
 
     # parses a command
     def command(name)
-      value(name.to_s, eos_failure_msg: "expected a command",
-                       failure_msg: -> ((_, val)) { "unknown command '#{val}'" })
-        .mapv { |v| [:arg, v] }
+      accept(-> ((kind, val)) { kind == :val && name.to_s == val },
+          eos_failure_msg: "expected a command",
+          failure_msg: -> ((_, val)) { "unknown command '#{val}'" })
+        .mapv { |_, v| [:arg, v] }
         .describe(name.to_s)
     end
 
@@ -115,6 +120,30 @@ class Drudge
           res.result
         else
           raise ParseError.new(input, res.remaining), res.message
+        end
+      end
+
+      # uses a type parser to coerce a Single(str) 
+      def coerce(type_parser)
+        map do |result|
+
+          if result.is_a? Success
+            parse_result = result.parse_result
+
+            if parse_result.is_a? Single
+              type_parser_result = type_parser[result.parse_result.value]
+
+              case type_parser_result
+              when Success then Success(Single(type_parser_result.parse_result), result.remaining)
+              else Failure(type_parser_result.message, result.remaining)
+              end
+            else
+              Failure("Coercion is possible only with Single ParseValues", result.remaining)
+            end
+
+          else
+            result
+          end
         end
       end
 

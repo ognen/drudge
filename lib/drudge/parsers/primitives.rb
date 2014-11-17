@@ -1,3 +1,4 @@
+require 'drudge/parsers/input'
 require 'drudge/parsers/parse_results'
 
 class Drudge
@@ -14,6 +15,47 @@ class Drudge
         prs
       end
 
+      # returns a parser that takes the specified number of elements,
+      # passes them to the specified block and returns whatever the 
+      # block returns
+      def take(num_elems, eos_failure_msg: "expected more input", &prs)
+        parser do |input|
+          vals = []
+          remaining = input
+          taken = 0
+
+          while not remaining.empty? and taken < num_elems
+            vals << remaining.peek
+            remaining = remaining.next
+            taken += 1
+          end
+
+          if vals.size == num_elems
+            prs.yield *vals, input, remaining
+          else
+            Failure(to_message(nil, eos_failure_msg), input)
+          end
+        end
+      end
+      
+      # tries to parse using the provided parser +p+
+      # if p fails, it will "reset the input" to where it was 
+      # as p may potentially advance it (i.e. return an error with a more advanced input)
+      def try(p)
+        parser do |input|
+          result = p[input]
+
+          case result
+          when Failure
+            Failure(result.message, input)
+          when Error
+            Error(result.message, input)
+          else
+            result
+          end
+        end.describe p.to_s
+      end
+
       # produces a parser that expects the +expected+ value
       # +expected+ can is checked using '===' so 
       #  accept(String) -> will accept any string
@@ -27,53 +69,34 @@ class Drudge
 
         expected = expected_block if expected_block
 
-        to_message = -> (value, msg) do 
-          case msg
-          when String
-            msg
-          when Proc
-            msg[value]
-          end
-        end
-
-        parser do |input|
-          value, *rest = input
-
-          case 
-          when input.nil? || input.empty?
-            Failure(to_message[value, eos_failure_msg], input)
-          when expected === value
-            Success(Single(value), rest)
+        take(1, eos_failure_msg: eos_failure_msg) do |value, input, remaining|
+          if expected === value
+            Success(Single(value), remaining)
           else
-            Failure(to_message[value, failure_msg], input)
-          end
-        end
+            Failure(to_message(value, failure_msg), input)
+          end          
+        end 
       end
 
+      def to_message(value, msg)
+        case msg
+        when Proc
+          msg[value]
+        else
+          msg.to_s
+        end
+      end
+            
       # returns a parser that always succeeds with the provided ParseValue
       def success(parse_value)
-        parser { |input| Success(parse_value, input) }.describe "SUCC: #{parse_value}"
-      end
-
-      def try_as(token_converter, other_parser)
-        parser do |input|
-          value, *rest = input
-
-          case 
-          when input.nil? || input.empty?
-            other_parser[input]
-          else
-            alternate_input = [token_converter[value]] + rest
-            other_parser[alternate_input]
-          end
-        end.describe other_parser.to_s
+        parser { |input| Success(parse_value, input) }.describe "`#{parse_value}`"
       end
 
       # matches the end of the stream
       def eos(message)
         parser do |input|
           if input.empty?
-            Success(Empty(), [])
+            Success(Empty(), input)
           else
             Failure(message, input)
           end
@@ -135,11 +158,13 @@ class Drudge
         # monadic bind (or flat map) for a parser
         # f should take the result of the current parser and return a the parser that will consume
         # the next input. Used for sequencing
-        def flat_map(&f)
+        def and_then(&f)
           parser do |input|
-            self[input].flat_map_with_next &f
+            self[input].and_then_using &f
           end
         end
+
+        alias_method :flat_map, :and_then
 
         # Returns a parser that, if self is successful will dicard its result
         # Used in combination with sequencing to achieve lookahead / lookbehind
@@ -151,7 +176,7 @@ class Drudge
         # follwing by the otheer parser on the remaining input
         # returns a Tuple of both results
         def >(other)
-          self.flat_map do |result1|
+          self.and_then do |result1|
             other.map do |result2|
               result1 + result2
             end

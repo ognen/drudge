@@ -5,9 +5,9 @@ def dummy_cmd(name, args = [])
 end
 
 def splash_param(name)
-  Drudge::Param.any(name, splatt: true)
+  Drudge::Param.new(name, :string, splatt: true)
 end
 
 def optional_param(name)
-  Drudge::Param.any(name, optional: true)
+  Drudge::Param.new(name, :string, optional: true)
 end
