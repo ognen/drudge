@@ -24,7 +24,7 @@ Feature: Argument types
 
     Examples:
      | command                  | output                         |
-     | cli greet 1 31.12.2014   | Integer, Date                  |
+     | cli greet 1 31.12.2014   | Fixnum, Date                   |
      | cli greet who 31.12.2014 | error: 'who' is not an integer |
      | cli greet 1 else         | error: 'else' is not a date    |
 
@@ -37,13 +37,15 @@ Feature: Argument types
     class Cli < Drudge
 
       desc "another greeting"
-      params message: :string, sent_date: date
+      params message: :string, sent_date: :date
       def greet(message, sent_date)
+        puts "#{message.class}, #{sent_date.class}"
       end
 
       desc "yet another"
-      params message: {type: string}, sent_date: {type: date}
+      params message: {type: :string}, sent_date: {type: :date}
       def greet2(message, sent_date)
+        puts "#{message.class}, #{sent_date.class}"
       end
     end
 
@@ -53,12 +55,12 @@ Feature: Argument types
     Then the output should contain "<output>"
     
     Examples:
-      | command                  | output                      |
-      | cli greet 1 31.12.2014   | String, Date                |
-      | cli greet who 31.12.2014 | String, Date                |
-      | cli greet 1 else         | error: 'else' is not a date |
-      | cli greet 1 31.12.2014   | String, Date                |
-      | cli greet who 31.12.2014 | String, Date                |
-      | cli greet 1 else         | error: 'else' is not a date |
+      | command                   | output                      |
+      | cli greet 1 31.12.2014    | String, Date                |
+      | cli greet who 31.12.2014  | String, Date                |
+      | cli greet 1 else          | error: 'else' is not a date |
+      | cli greet 1 31.12.2014    | String, Date                |
+      | cli greet2 who 31.12.2014 | String, Date                |
+      | cli greet 1 else          | error: 'else' is not a date |
 
 

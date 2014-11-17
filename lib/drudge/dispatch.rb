@@ -34,7 +34,7 @@ class Drudge
 
               #{Tokenizer.untokenize(pe.input)}
               #{Tokenizer.underline_token(pe.input, 
-                                          pe.remaining_input.peek)}
+                                          pe.remaining_input.empty? ? nil : pe.remaining_input.peek)}
         EOS
 
 
