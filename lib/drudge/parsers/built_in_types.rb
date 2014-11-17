@@ -15,6 +15,10 @@ class Drudge
         Success(Integer(s)) rescue Failure("'#{s}' is not an integer")
       end
 
+      def_type(:float) do |s|
+        Success(Float(s)) rescue Failure("'#{s}' is not a float")
+      end
+
       DATE_FORMATS = %w{
         %d.%m.%Y
         %d.%m.%y
@@ -40,6 +44,14 @@ class Drudge
         when "today" then Success(Date.today)
         when "yesterday" then Success(Date.today - 1)
         else Failure("'#{s}' is not a date")
+        end
+      end
+
+      def_type(:bool) do |s|
+        case s
+        when /yes/i, /true/i, 1 then Success(true)
+        when /no/i, /false/i, 0 then Success(false)
+        else Failure("'#{s}' is not a boolean")
         end
       end
     end
